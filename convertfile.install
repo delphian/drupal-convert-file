@@ -1,0 +1,25 @@
+<?php
+
+/**
+ * @file
+ * Installation functionality.
+ *
+ * Post a drupal message each time the module is enabled. Cleanup old
+ * variables when module is uninstalled.
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function convertfile_enable() {
+  // Generate a friendly message to inform the admin what to do next after
+  // enabling the module.
+  drupal_set_message(t('Please configure the module at') . ' <a href="/admin/config/convertfile/config">/admin/config/convertfile/config</a>', 'status');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function convertfile_uninstall() {
+  // Remove all our variables.
+}
