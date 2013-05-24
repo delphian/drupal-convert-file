@@ -54,52 +54,71 @@ function convertfile_permission() {
   );
 }
 
-/** 
- * Implements hook_file_presave().
+/**
+ * Collates all information on conversion providers and supported extensions.
+ *
+ * @param bool $reset
+ *   Bypass all static variables and caching
+ *
+ * @return array
+ *   An assocative array keyed by provider name. Each sub-array contains:
+ *   - 'name': (string) Name of the provider.
+ *   - 'callback': (string) Name of the callback function.
+ *   - 'types': (array) Associative array keyed by file extension that can be
+ *     converted to. Value will be the displayed name.
  */
-function convertfile_file_presave($file) {
-  // /Users/bryan/Downloads/rose.jpg
+function convertfile_collect_info($reset = FALSE) {
+  static $info;
 
-  if (file_exists($file->uri)) {
-    $uri = $file->uri;
-    $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
-    $base =  pathinfo($file->uri, PATHINFO_FILENAME);
-    $ext = pathinfo($file->uri, PATHINFO_EXTENSION);
-
-    // Convert all png to jpg.
-    if ($ext == 'png') {
-      $dir_new = $dir;
-      $base_new = $base;
-      $ext_new = 'jpg';
-      $uri_new = $dir_new . '/' . $base_new . '.' . $ext_new;
-
-      $file->uri = $uri_new;
-      copy('/Users/bryan/Downloads/rose.jpg', $uri_new);
-      unlink($uri);
-
-      $file->filename = $base_new . '.' . $ext_new;
-      $file->filesize = filesize($uri_new);
-      $file->filemime = file_get_mimetype($uri_new);
-      dpm(array($ext, $base, $dir, $file));
+  if (!isset($info) || $reset) {
+    if (!$reset && ($cached = cache_get('convertfile_providers', 'cache'))) {
+      $info = $cached;
+    }
+    else {
+      $info = module_invoke_all('convertfile_info');
     }
   }
+
+  return $info;
 }
 
-function convertfile_file_load($files) {
-  dpm(file_usage_list(array_shift($files)));
-  dpm($files);
+/**
+ * Implements hook_convertfile_info().
+ */
+function convertfile_convertfile_info() {
+  return array(
+    'convertfile' => array(
+      'name' => 'Convert File Module',
+      'callback' => 'convertfile_do_conversion',
+      'types' => array(
+        'gz' => '.gz (application/x-gzip)',
+      ),
+    ),
+  );
 }
 
 /**
  * Implements hook_field_widget_info().
  */
-function convert_field_widget_info() {
+function convertfile_field_widget_info() {
   return array(
-    'convert_file' => array(
-      'label' => t('Convert'),
+    'convertfile_file' => array(
+      'label' => t('Convert File'),
       'field types' => array('file'),
       'settings' => array(
         'progress_indicator' => 'throbber',
+      ),
+      'behaviors' => array(
+        'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+        'default value' => FIELD_BEHAVIOR_NONE,
+      ),
+    ),
+    'convertfile_image' => array(
+      'label' => t('Convert Image'),
+      'field types' => array('image'),
+      'settings' => array(
+        'progress_indicator' => 'throbber',
+        'preview_image_style' => 'thumbnail',
       ),
       'behaviors' => array(
         'multiple values' => FIELD_BEHAVIOR_CUSTOM,
@@ -112,21 +131,54 @@ function convert_field_widget_info() {
 /**
  * Implements hook_field_widget_settings_form().
  */
-function convert_field_widget_settings_form($field, $instance) {
+function convertfile_field_widget_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $settings = $widget['settings'];
 
-  $form['progress_indicator'] = array(
-    '#type' => 'radios',
-    '#title' => t('Progress indicator'),
-    '#options' => array(
-      'throbber' => t('Throbber'),
-      'bar' => t('Bar with progress meter'),
-    ),
-    '#default_value' => $settings['progress_indicator'],
-    '#description' => t('The throbber display does not show the status of uploads but takes up less space. The progress bar is helpful for monitoring progress on large uploads.'),
-    '#weight' => 16,
-    '#access' => file_progress_implementation(),
+  if ($field['type'] == 'file') {
+    $form['progress_indicator'] = array(
+      '#type' => 'radios',
+      '#title' => t('Progress indicator'),
+      '#options' => array(
+        'throbber' => t('Throbber'),
+        'bar' => t('Bar with progress meter'),
+      ),
+      '#default_value' => $settings['progress_indicator'],
+      '#description' => t('The throbber display does not show the status of uploads but takes up less space. The progress bar is helpful for monitoring progress on large uploads.'),
+      '#weight' => 16,
+      '#access' => file_progress_implementation(),
+    );
+  }
+  if ($field['type'] == 'image') {
+    // Use the file widget settings form.
+    $form = file_field_widget_settings_form($field, $instance);
+    $form['preview_image_style'] = array(
+      '#title' => t('Preview image style'),
+      '#type' => 'select',
+      '#options' => image_style_options(FALSE),
+      '#empty_option' => '<' . t('no preview') . '>',
+      '#default_value' => $settings['preview_image_style'],
+      '#description' => t('The preview image will be shown while editing the content.'),
+      '#weight' => 15,
+    );
+  }
+
+  // Compile array of all file conversion providers.
+  $options = array('none' => '- None -');
+  if ($results = convertfile_collect_info()) {
+    foreach($results as $key => $result) {
+      $options[$key] = $result['name'];
+    }
+  }
+
+  // Add our common custom settings
+  $form['convertfile_provider'] = array(
+    '#title' => t('Convert using provider'),
+    '#type' => 'select',
+    '#options' => $options,
+    '#default_value' => isset($settings['convertfile_provider']) ? $settings['convertfile_provider'] : 'none',
+    '#description' => t('The provider used to convert this file.'),
+    '#weight' => 20,
   );
 
   return $form;
@@ -134,79 +186,56 @@ function convert_field_widget_settings_form($field, $instance) {
 
 /**
  * Implements hook_field_widget_form().
+ *
+ * Insert a custom validator for any fields managed by our widget.
  */
-function convert_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  $element['#upload_validators']['convertfile_validate_conversion'] = array($instance);
 
-  $defaults = array(
-    'fid' => 0,
-    'display' => !empty($field['settings']['display_default']),
-    'description' => '',
-  );
-
-  // Load the items for form rebuilds from the field state as they might not be
-  // in $form_state['values'] because of validation limitations. Also, they are
-  // only passed in as $items when editing existing entities.
-  $field_state = field_form_get_state($element['#field_parents'], $field['field_name'], $langcode, $form_state);
-  if (isset($field_state['items'])) {
-    $items = $field_state['items'];
+  if ($field['type'] == 'file') {
+    $elements = file_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
   }
-
-  // Essentially we use the managed_file type, extended with some enhancements.
-  $element_info = element_info('managed_file');
-  $element += array(
-    '#type' => 'managed_file',
-    '#upload_location' => file_field_widget_uri($field, $instance),
-    '#upload_validators' => file_field_widget_upload_validators($field, $instance),
-    '#value_callback' => 'file_field_widget_value',
-    '#process' => array_merge($element_info['#process'], array('file_field_widget_process')),
-    '#progress_indicator' => $instance['widget']['settings']['progress_indicator'],
-    // Allows this field to return an array instead of a single value.
-    '#extended' => TRUE,
-  );
-
-  if ($field['cardinality'] == 1) {
-    // Set the default value.
-    $element['#default_value'] = !empty($items) ? $items[0] : $defaults;
-    // If there's only one field, return it as delta 0.
-    if (empty($element['#default_value']['fid'])) {
-      $element['#description'] = theme('file_upload_help', array('description' => $element['#description'], 'upload_validators' => $element['#upload_validators']));
-    }
-    $elements = array($element);
-  }
-  else {
-    // If there are multiple values, add an element for each existing one.
-    foreach ($items as $item) {
-      $elements[$delta] = $element;
-      $elements[$delta]['#default_value'] = $item;
-      $elements[$delta]['#weight'] = $delta;
-      $delta++;
-    }
-    // And then add one more empty row for new uploads except when this is a
-    // programmed form as it is not necessary.
-    if (($field['cardinality'] == FIELD_CARDINALITY_UNLIMITED || $delta < $field['cardinality']) && empty($form_state['programmed'])) {
-      $elements[$delta] = $element;
-      $elements[$delta]['#default_value'] = $defaults;
-      $elements[$delta]['#weight'] = $delta;
-      $elements[$delta]['#required'] = ($element['#required'] && $delta == 0);
-    }
-    // The group of elements all-together need some extra functionality
-    // after building up the full list (like draggable table rows).
-    $elements['#file_upload_delta'] = $delta;
-    $elements['#theme'] = 'file_widget_multiple';
-    $elements['#theme_wrappers'] = array('fieldset');
-    $elements['#process'] = array('file_field_widget_process_multiple');
-    $elements['#title'] = $element['#title'];
-    $elements['#description'] = $element['#description'];
-    $elements['#field_name'] = $element['#field_name'];
-    $elements['#language'] = $element['#language'];
-    $elements['#display_field'] = $field['settings']['display_field'];
-
-    // Add some properties that will eventually be added to the file upload
-    // field. These are added here so that they may be referenced easily through
-    // a hook_form_alter().
-    $elements['#file_upload_title'] = t('Add a new file');
-    $elements['#file_upload_description'] = theme('file_upload_help', array('description' => '', 'upload_validators' => $elements[0]['#upload_validators']));
+  if ($field['type'] == 'image') {
+    $elements = image_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
   }
 
   return $elements;
+}
+
+/**
+ * Convert PNG to JPG.
+ */
+function convertfile_validate_conversion($file, $instance) {
+  $settings = $instance['widget']['settings'];
+
+  $provider = $settings['convertfile_provider'];
+  $info = convertfile_collect_info();
+  if (isset($info[$provider]['callback'])) {
+    $callback = $info[$provider]['callback'];
+    if (function_exists($callback)) {
+      $callback($file, $instance);
+    }
+  }
+
+  // if (file_exists($file->uri)) {
+  //   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
+  //   $base = pathinfo($file->filename, PATHINFO_FILENAME);
+  //   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
+
+  //   // Convert all png to jpg.
+  //   if ($ext == 'png') {
+  //     $ext_new = 'jpg';
+
+  //     copy('/Users/bryan/Downloads/rose.jpg', $file->uri);
+
+  //     $file->filename = $base . '.' . $ext_new;
+  //     $file->filesize = filesize($file->uri);
+  //     $file->filemime = file_get_mimetype($file->filename);
+  //   }
+  // }
+  return array();
+}
+
+function convertfile_do_conversion($file, $instance) {
+  exit('die');
 }
