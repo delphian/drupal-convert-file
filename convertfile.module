@@ -171,6 +171,17 @@ function convertfile_field_widget_settings_form($field, $instance) {
     }
   }
 
+  // Compile list of specific provider's formats.
+  $format_options = array('none' => '- None -');
+  if (isset($settings['convertfile_provider'])) {
+    $handler = $settings['convertfile_provider'];
+    if (isset($results[$handler])) {
+      foreach($results[$handler]['types'] as $key => $value) {
+        $format_options[$key] = $value;
+      }
+    }
+  }
+
   // Add our common custom settings
   $form['convertfile_provider'] = array(
     '#title' => t('Convert using provider'),
@@ -179,9 +190,48 @@ function convertfile_field_widget_settings_form($field, $instance) {
     '#default_value' => isset($settings['convertfile_provider']) ? $settings['convertfile_provider'] : 'none',
     '#description' => t('The provider used to convert this file.'),
     '#weight' => 20,
+    '#ajax' => array(
+      'callback' => 'convertfile_ajax_show_formats',
+      'wrapper' => 'convertfile-format-wrapper',
+      'method' => 'replace',
+      'effect' => 'fade',
+    ),
+  );
+
+  $form['convertfile_format'] = array(
+    '#title' => t('Convert to format'),
+    '#type' => 'select',
+    '#description' => 'The file format that will be converted to.',
+    '#options' => $format_options,
+    '#default_value' => isset($settings['convertfile_format']) ? $settings['convertfile_format'] : 'none',
+    '#prefix' => "<div id='convertfile-format-wrapper'>",
+    '#suffix' => '</div>',
+    '#weight' => 22,
   );
 
   return $form;
+}
+
+function convertfile_ajax_show_formats($form, $form_state) {
+  // Compile list of specific provider's formats.
+  $format_options = array('none' => '- None -');
+  if ($results = convertfile_collect_info()) {
+    $handler = $form_state['values']['instance']['widget']['settings']['convertfile_provider'];
+    if (isset($results[$handler])) {
+      foreach($results[$handler]['types'] as $key => $value) {
+        $format_options[$key] = $value;
+      }
+    }
+  }
+
+  return array(
+    '#title' => t('Convert to format'),
+    '#type' => 'select',
+    '#description' => 'The file format that will be converted to',
+    '#options' => $format_options,
+    '#prefix' => "<div id='convertfile-format-wrapper'>",
+    '#suffix' => '</div>',
+  );
 }
 
 /**
@@ -191,6 +241,7 @@ function convertfile_field_widget_settings_form($field, $instance) {
  */
 function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $element['#upload_validators']['convertfile_validate_conversion'] = array($instance);
+  $element['#upload_validators']['file_validate_extensions'][] = 'gz txt';
 
   if ($field['type'] == 'file') {
     $elements = file_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
@@ -203,9 +254,10 @@ function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, 
 }
 
 /**
- * Convert PNG to JPG.
+ * Validator. Will call any registered handlers.
  */
 function convertfile_validate_conversion($file, $instance) {
+  $report = array();
   $settings = $instance['widget']['settings'];
 
   $provider = $settings['convertfile_provider'];
@@ -213,29 +265,38 @@ function convertfile_validate_conversion($file, $instance) {
   if (isset($info[$provider]['callback'])) {
     $callback = $info[$provider]['callback'];
     if (function_exists($callback)) {
-      $callback($file, $instance);
+      $report = $callback($file, $instance);
     }
   }
 
-  // if (file_exists($file->uri)) {
-  //   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
-  //   $base = pathinfo($file->filename, PATHINFO_FILENAME);
-  //   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
-
-  //   // Convert all png to jpg.
-  //   if ($ext == 'png') {
-  //     $ext_new = 'jpg';
-
-  //     copy('/Users/bryan/Downloads/rose.jpg', $file->uri);
-
-  //     $file->filename = $base . '.' . $ext_new;
-  //     $file->filesize = filesize($file->uri);
-  //     $file->filemime = file_get_mimetype($file->filename);
-  //   }
-  // }
-  return array();
+  return $report;
 }
 
+/**
+ * Convert our files.
+ *
+ * @todo we are messing with the destination file name, this could crash into
+ * an existing filename that was not checked (with the new extension).
+ */
 function convertfile_do_conversion($file, $instance) {
-  exit('die');
+  $settings = $instance['widget']['settings'];
+  $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
+  $base = pathinfo($file->filename, PATHINFO_FILENAME);
+  $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
+
+  // Gzip the file.
+  if ($settings['convertfile_format'] == 'gz' && $ext != 'gz') {
+    $contents = file_get_contents($file->uri);
+    $fp = gzopen($file->uri, 'w9');
+    gzwrite($fp, $contents);
+    gzclose($fp);
+
+    $ext_new = 'gz';
+    $file->filename = $base . '.' . $ext . '.' . $ext_new;
+    $file->filesize = filesize($file->uri);
+    $file->filemime = file_get_mimetype($file->filename);
+    $file->destination = $file->destination . '.' . $ext_new;
+  }
+
+  return array();
 }
