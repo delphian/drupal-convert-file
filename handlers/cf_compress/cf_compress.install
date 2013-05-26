@@ -1,0 +1,38 @@
+<?php
+
+/**
+ * @file
+ * Installation functionality.
+ *
+ * Post a drupal message each time the module is enabled. Cleanup old
+ * variables when module is uninstalled.
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function cf_compress_enable() {
+  drupal_set_message('A new file conversion handler is available: "Compress".');
+}
+
+/**
+ * Implements hook_install().
+ */
+function cf_compress_install() {
+  // By default the module will be enabled for conversions.
+  variable_set('cf_compress_enable', TRUE);
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Remove all our variables.
+ */
+function cf_compress_uninstall() {
+  // Get module variables
+  $results = db_query("SELECT v.name FROM {variable} AS v WHERE v.name LIKE '%s%%'", 'cf_compress_');
+  // Remove variables
+  while ($row = db_fetch_array($results)) {
+    variable_del($row['name']);
+  }    
+}

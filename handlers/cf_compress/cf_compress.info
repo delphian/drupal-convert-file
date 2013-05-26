@@ -1,0 +1,7 @@
+name = Convert File Handler Compress
+description = "Compress files."
+core = 7.x
+package = Convert File
+configure = admin/config/convertfile/handler/compress
+
+dependencies[] = convertfile

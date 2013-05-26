@@ -1,0 +1,72 @@
+<?php
+
+/**
+ * @file
+ * Compress File Handler that will compress files.
+ */
+
+/**
+ * Implements of hook_menu().
+ */
+function cf_compress_menu() {
+  // Provide a page to handle watchdog error messages.
+  $items['admin/config/convertfile/handler/compress'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Compress',
+    'description' => 'Compress files.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cf_compress_form'),
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'cf_compress.admin.inc',
+    'file path' => drupal_get_path('module', 'cf_compress'),
+    'weight' => 40,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_convertfile_info().
+ */
+function cf_compress_convertfile_info() {
+  return array(
+    'compress' => array(
+      'name' => 'Compress',
+      'callback' => 'cf_compress_do_conversion',
+      'types' => array(
+        'gz' => '.gz (application/x-gzip)',
+      ),
+    ),
+  );
+}
+
+/**
+ * Convert our files.
+ *
+ * @todo we are messing with the destination file name, this could crash into
+ * an existing filename that was not checked (with the new extension).
+ */
+function convertfile_do_conversion($file, $instance) {
+  if (variable_get('cf_compress_enable', TRUE) == TRUE) {
+    $settings = $instance['widget']['settings'];
+    $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
+    $base = pathinfo($file->filename, PATHINFO_FILENAME);
+    $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
+
+    // Gzip the file.
+    if ($settings['convertfile_format'] == 'gz' && $ext != 'gz') {
+      $contents = file_get_contents($file->uri);
+      $fp = gzopen($file->uri, 'w9');
+      gzwrite($fp, $contents);
+      gzclose($fp);
+
+      $ext_new = 'gz';
+      $file->filename = $base . '.' . $ext . '.' . $ext_new;
+      $file->filesize = filesize($file->uri);
+      $file->filemime = file_get_mimetype($file->filename);
+      $file->destination = $file->destination . '.' . $ext_new;
+    }
+  }
+
+  return array();
+}
