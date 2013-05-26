@@ -27,6 +27,8 @@ function cf_compress_menu() {
 
 /**
  * Implements hook_convertfile_info().
+ *
+ * Register our handler and formats with convertfile module.
  */
 function cf_compress_convertfile_info() {
   return array(
