@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Compress File Handler that will compress files.
+ * Convert File Handler that will compress files.
  */
 
 /**
@@ -41,10 +41,18 @@ function cf_compress_convertfile_info() {
 }
 
 /**
- * Convert our files.
+ * Convert file as it exists in the temporary upload directory before
+ * drupal relocates it.
  *
- * @todo we are messing with the destination file name, this could crash into
- * an existing filename that was not checked (with the new extension).
+ * @param stdClass $file
+ *   A file object as returned by file_load(). This will be modified by
+ *   our function.
+ * @param array $instance
+ *   The field instance that received this file.
+ *
+ * @return array
+ *   Each element of array should be a string containing and error message,
+ *   otherwise an empty error if no errors.
  */
 function cf_compress_do_conversion($file, $instance) {
   if (variable_get('cf_compress_enable', TRUE) == TRUE) {

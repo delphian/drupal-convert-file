@@ -10,7 +10,7 @@
 /**
  * Menu callback.
  *
- * Display all handlers.
+ * Display configuration form.
  */
 function cf_compress_form() {
 
@@ -46,8 +46,6 @@ function cf_compress_form() {
 
 /**
  * Submit handler for config form.
- *
- * @todo Consider: adding some validation?
  */
 function cf_compress_form_submit($form_id, &$form_state) {
   variable_set('cf_compress_enable', $form_state['values']['enable']);
