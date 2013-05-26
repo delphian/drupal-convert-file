@@ -83,6 +83,19 @@ function convertfile_config_form_submit($form_id, &$form_state) {
 /**
  * Menu callback.
  *
+ * Display all handlers.
+ */
+function convertfile_handler_form() {
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Update'),
+  );
+  return $form;
+}
+
+/**
+ * Menu callback.
+ *
  * Display all debug and error messages from watchdog for our module.
  */
 function convertfile_watchdog_form() {

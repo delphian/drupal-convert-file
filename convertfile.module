@@ -21,23 +21,39 @@ function convertfile_menu() {
   );
   // Provide a page to handle general settings and configuration.
   $items['admin/config/convertfile/config'] = array(
-    'title' => 'Convert File Config',
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Configuration',
     'description' => 'Configure Convert File options and settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('convertfile_config_form'),
     'access arguments' => array('administer convertfile settings'),
     'file' => 'convertfile.admin.inc',
     'file path' => drupal_get_path('module', 'convertfile'),
+    'weight' => 10,
   );
   // Provide a page to handle watchdog error messages.
   $items['admin/config/convertfile/watchdog'] = array(
-    'title' => 'Convert File Logs',
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Logs',
     'description' => 'View debug and error messages.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('convertfile_watchdog_form'),
     'access arguments' => array('administer convertfile settings'),
     'file' => 'convertfile.admin.inc',
     'file path' => drupal_get_path('module', 'convertfile'),
+    'weight' => 20,
+  );
+  // Provide a page to handle watchdog error messages.
+  $items['admin/config/convertfile/handler'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Handlers',
+    'description' => 'All installed file conversion handlers.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('convertfile_handler_form'),
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'convertfile.admin.inc',
+    'file path' => drupal_get_path('module', 'convertfile'),
+    'weight' => 30,
   );
 
   return $items;
@@ -80,21 +96,6 @@ function convertfile_collect_info($reset = FALSE) {
   }
 
   return $info;
-}
-
-/**
- * Implements hook_convertfile_info().
- */
-function convertfile_convertfile_info() {
-  return array(
-    'convertfile' => array(
-      'name' => 'Convert File Module',
-      'callback' => 'convertfile_do_conversion',
-      'types' => array(
-        'gz' => '.gz (application/x-gzip)',
-      ),
-    ),
-  );
 }
 
 /**
@@ -270,33 +271,4 @@ function convertfile_validate_conversion($file, $instance) {
   }
 
   return $report;
-}
-
-/**
- * Convert our files.
- *
- * @todo we are messing with the destination file name, this could crash into
- * an existing filename that was not checked (with the new extension).
- */
-function convertfile_do_conversion($file, $instance) {
-  $settings = $instance['widget']['settings'];
-  $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
-  $base = pathinfo($file->filename, PATHINFO_FILENAME);
-  $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
-
-  // Gzip the file.
-  if ($settings['convertfile_format'] == 'gz' && $ext != 'gz') {
-    $contents = file_get_contents($file->uri);
-    $fp = gzopen($file->uri, 'w9');
-    gzwrite($fp, $contents);
-    gzclose($fp);
-
-    $ext_new = 'gz';
-    $file->filename = $base . '.' . $ext . '.' . $ext_new;
-    $file->filesize = filesize($file->uri);
-    $file->filemime = file_get_mimetype($file->filename);
-    $file->destination = $file->destination . '.' . $ext_new;
-  }
-
-  return array();
 }
