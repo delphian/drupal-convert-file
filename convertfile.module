@@ -242,7 +242,7 @@ function convertfile_ajax_show_formats($form, $form_state) {
  */
 function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   $element['#upload_validators']['convertfile_validate_conversion'] = array($instance);
-  $element['#upload_validators']['file_validate_extensions'][] = 'gz txt';
+  $element['#upload_validators']['file_validate_extensions'][] = $instance['settings']['file_extensions'];
 
   if ($field['type'] == 'file') {
     $elements = file_field_widget_form($form, $form_state, $field, $instance, $langcode, $items, $delta, $element);
@@ -256,6 +256,8 @@ function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, 
 
 /**
  * Validator. Will call any registered handlers.
+ *
+ * @todo Check destination file name is unique after callback.
  */
 function convertfile_validate_conversion($file, $instance) {
   $report = array();
@@ -268,6 +270,7 @@ function convertfile_validate_conversion($file, $instance) {
     if (function_exists($callback)) {
       $report = $callback($file, $instance);
     }
+    // @todo Revalidate the destination file name.
   }
 
   return $report;

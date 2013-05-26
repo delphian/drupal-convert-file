@@ -46,7 +46,7 @@ function cf_compress_convertfile_info() {
  * @todo we are messing with the destination file name, this could crash into
  * an existing filename that was not checked (with the new extension).
  */
-function convertfile_do_conversion($file, $instance) {
+function cf_compress_do_conversion($file, $instance) {
   if (variable_get('cf_compress_enable', TRUE) == TRUE) {
     $settings = $instance['widget']['settings'];
     $dir = pathinfo($file->uri, PATHINFO_DIRNAME);

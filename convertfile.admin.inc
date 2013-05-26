@@ -70,12 +70,6 @@ function convertfile_config_form() {
  * @todo Consider: adding some validation?
  */
 function convertfile_config_form_submit($form_id, &$form_state) {
-  // variable_set('convertfile_api_key', $form_state['values']['gplus_api_key']);
-  // variable_set('convertfile_cache_minutes', $form_state['values']['gplus_cache_minutes']);
-  // variable_set('convertfile_profile_id', $form_state['values']['gplus_profile_id']);
-  // variable_set('convertfile_time_format', $form_state['values']['gplus_time_format']);
-  // variable_set('convertfile_max_results', $form_state['values']['gplus_max_results']);
-  // variable_set('convertfile_record_api', $form_state['values']['gplus_record_api']);
 
   drupal_set_message(t('Settings have been updated.'));
 }
