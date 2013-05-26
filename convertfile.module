@@ -270,7 +270,8 @@ function convertfile_validate_conversion($file, $instance) {
     if (function_exists($callback)) {
       $report = $callback($file, $instance);
     }
-    // @todo Revalidate the destination file name.
+    // Because the destination was messed with, make sure its still unique.
+    $file->destination = file_destination($file->destination, FILE_EXISTS_RENAME);
   }
 
   return $report;
