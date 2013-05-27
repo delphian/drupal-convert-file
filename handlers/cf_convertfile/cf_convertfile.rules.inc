@@ -1,30 +1,12 @@
-<?
-
-/**
- * Implementation of hook_rules_event_info().
- * @ingroup rules
- */
-function cf_compress_rules_event_info() {
-  return array(
-    'cf_compress_request' => array(
-      'group' => 'Convert File',
-      'label' => t('CF Handler Compress has been requested.'),
-      'module' => 'cf_compress',
-      'variables' => array(
-        'file' => array('type' => 'file', 'label' => t('The file on which compression has been requested.')),
-        'instance' => array('type' => 'struct', 'label' => t('Field instance that file is attached to.')),
-      ),
-    ),
-  );
-}
+<?php
 
 /**
  * Implements hook_rules_action_info().
  */
-function cf_compress_rules_action_info() {
+function cf_convertfile_rules_action_info() {
   return array(
-    'cf_compress_gzip' => array(
-      'label' => t('Convert file to .gz (application/x-gzip)'), 
+    'cf_convertfile_gzip' => array(
+      'label' => t('Convert file to .gz (application/x-gzip)'),
       'parameter' => array(
         'file' => array(
           'type' => 'file',
@@ -34,9 +16,9 @@ function cf_compress_rules_action_info() {
           'type' => 'struct',
           'label' => t('Field instance data'),
         ),
-      ), 
+      ),
       'group' => t('Convert File'),
-      'base' => 'cf_compress_action_gzip',
+      'base' => 'cf_convertfile_action_gzip',
     ),
   );
 }
@@ -54,9 +36,9 @@ function cf_compress_rules_action_info() {
  *   Sets new property of convertfile_error to TRUE on the $file object if an
  *   error was encountered, otherwise properties absense means success.
  *
- * @see cf_compress_rules_action_info()
+ * @see cf_convertfile_rules_action_info()
  */
-function cf_compress_action_gzip($file, $instance) {
+function cf_convertfile_action_gzip($file, $instance) {
   $success = FALSE;
   $settings = $instance['widget']['settings'];
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);

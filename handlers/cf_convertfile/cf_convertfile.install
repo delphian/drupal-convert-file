@@ -11,14 +11,16 @@
 /**
  * Implements hook_enable().
  */
-function cf_compress_enable() {
-  drupal_set_message('A new file conversion handler is available: "Compress".');
+function cf_convertfile_enable() {
+  drupal_set_message('A new file conversion handler is available: "Convert File".');
 }
 
 /**
  * Implements hook_install().
  */
-function cf_compress_install() {
+function cf_convertfile_install() {
+  // Enable help hook text.
+  variable_set('cf_convertfile_help', TRUE);
 }
 
 /**
@@ -26,9 +28,9 @@ function cf_compress_install() {
  *
  * Remove all our variables.
  */
-function cf_compress_uninstall() {
+function cf_convertfile_uninstall() {
   // Get module variables
-  $results = db_query("SELECT v.name FROM {variable} AS v WHERE v.name LIKE '%s%%'", 'cf_compress_');
+  $results = db_query("SELECT v.name FROM {variable} AS v WHERE v.name LIKE '%s%%'", 'cf_convertfile_');
   // Remove variables
   while ($row = db_fetch_array($results)) {
     variable_del($row['name']);
