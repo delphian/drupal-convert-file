@@ -7,7 +7,25 @@ function convertfile_rules_event_info() {
   return array(
     'convertfile_request' => array(
       'group' => 'Convert File',
-      'label' => t('File conversion has been requested.'),
+      'label' => t('File conversion has been requested'),
+      'module' => 'convertfile',
+      'variables' => array(
+        'file' => array('type' => 'file', 'label' => t('The file on which compression has been requested.')),
+        'instance' => array('type' => 'struct', 'label' => t('Field instance that file is attached to.')),
+      ),
+    ),
+    'convertfile_success' => array(
+      'group' => 'Convert File',
+      'label' => t('File conversion has succeeded'),
+      'module' => 'convertfile',
+      'variables' => array(
+        'file' => array('type' => 'file', 'label' => t('The file on which compression has been requested.')),
+        'instance' => array('type' => 'struct', 'label' => t('Field instance that file is attached to.')),
+      ),
+    ),
+    'convertfile_failure' => array(
+      'group' => 'Convert File',
+      'label' => t('File conversion has failed'),
       'module' => 'convertfile',
       'variables' => array(
         'file' => array('type' => 'file', 'label' => t('The file on which compression has been requested.')),
