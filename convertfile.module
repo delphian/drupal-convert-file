@@ -264,6 +264,9 @@ function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, 
 /**
  * Validator. Will call any registered handlers.
  *
+ * In the event of an error the handler should write an error message to
+ * $file->convertfile_error.
+ *
  * @param stdClass $file
  *   File object that is being readied to be moved from temporary server
  *   upload bin.
@@ -311,7 +314,7 @@ function convertfile_validate_conversion($file, $instance) {
   }
   // Log failed file conversion.
   else {
-    watchdog('convertfile', "{$name} Failed to convert {$orig_file->filename}");
+    watchdog('convertfile', "{$name} Failed to convert {$orig_file->filename}. {$file->convertfile_error}", NULL, WATCHDOG_ERROR);
   }
 
   return $report;

@@ -57,7 +57,8 @@ function cf_convertapi_convertfile_info() {
  *   Field instance that this file was submitted to.
  *
  * @return bool
- *   TRUE if conversion was success, FALSE otherwise.
+ *   TRUE if conversion was success, FALSE otherwise. In the event of a
+ *   failure $file->convertfile_error should be set with an error message.
  *
  * @see cf_convertapi_convertfile_info()
  */
@@ -89,11 +90,11 @@ function cf_convertapi_do_conversion($file, $instance) {
       $report = TRUE;
     }
     else {
-      watchdog('convertfile', 'ConvertAPI could not write file to disk.', NULL, WATCHDOG_ERROR);
+      $file->convertfile_error = 'ConvertAPI could not write file to disk.';
     }
   }
   else {
-    watchdog('convertfile', 'ConvertAPI could not convert file: @message.', array('@message' => $message), WATCHDOG_ERROR);
+    $file->convertfile_error = "ConvertAPI could not convert file: {$message}.";
   }
 
   return $report;
