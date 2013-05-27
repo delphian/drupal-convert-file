@@ -27,13 +27,15 @@ function cf_convertapi_api_parse_header($header = '') {
  *   Load the file to convert into this blob.
  * @param string $apiKey
  *   API Key granting access to ConvertAPI.com
+ * @param string $type
+ *   The type of conversion to perform.
  * @param string &$message
  *   Filled with verbose error or success message.
  *
  * @return string|bool
  *   A blob string on success containing the converted file, FALSE on error.
  */
-function cf_convertapi_api_call($fileToConvert, $apiKey, &$message) {
+function cf_convertapi_api_call($fileToConvert, $apiKey, $type, &$message) {
   try {
     $postdata = array(
       'OutputFileName' => 'MyFile.pdf',
@@ -41,7 +43,7 @@ function cf_convertapi_api_call($fileToConvert, $apiKey, &$message) {
       'file' => '@'.$fileToConvert,
     );
     //$ch = curl_init("http://do.convertapi.com/word2pdf");
-    $ch = curl_init("http://do.convertapi.com/text2pdf");
+    $ch = curl_init($type);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_HEADER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);

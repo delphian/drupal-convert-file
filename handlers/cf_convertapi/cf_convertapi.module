@@ -5,6 +5,8 @@
  * Convert File Handler that will convert using REST API from convertapi.com.
  */
 
+define('CF_CONVERTAPI_TEXT2PDF', 'http://do.convertapi.com/text2pdf');
+
 /**
  * Implements of hook_menu().
  */
@@ -68,7 +70,7 @@ function cf_convertapi_do_conversion($file, $instance) {
   $message = NULL;
 
   module_load_include('inc', 'cf_convertapi', 'cf_convertapi.api');
-  if ($new_blob = cf_convertapi_api_call($file->uri, $key, $message)) {
+  if ($new_blob = cf_convertapi_api_call($file->uri, $key, CF_CONVERTAPI_TEXT2PDF, $message)) {
     $fp = fopen($file->uri, "wbx");
     if (fwrite($fp, $body)) {
       $ext_new = 'pdf';
