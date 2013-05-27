@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * @file
+ * Installation functionality.
+ *
+ * Post a drupal message each time the module is enabled. Cleanup old
+ * variables when module is uninstalled.
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function cf_convertapi_enable() {
+  drupal_set_message('A new file conversion handler is available: "ConvertAPI.com"');
+}
+
+/**
+ * Implements hook_install().
+ */
+function cf_convertapi_install() {
+  variable_set('cf_convertapi_api_key', NULL);
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Remove all our variables.
+ */
+function cf_convertapi_uninstall() {
+  // Get module variables
+  $results = db_query("SELECT v.name FROM {variable} AS v WHERE v.name LIKE '%s%%'", 'cf_convertapi_');
+  // Remove variables
+  while ($row = db_fetch_array($results)) {
+    variable_del($row['name']);
+  }    
+}

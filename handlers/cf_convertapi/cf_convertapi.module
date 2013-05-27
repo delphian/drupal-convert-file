@@ -1,0 +1,43 @@
+<?php
+
+/**
+ * @file
+ * Convert File Handler that will convert using REST API from convertapi.com.
+ */
+
+/**
+ * Implements of hook_menu().
+ */
+function cf_convertapi_menu() {
+  // Provide a page to handle watchdog error messages.
+  $items['admin/config/convertfile/settings/handler/convertapi'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'ConvertAPI.com',
+    'description' => 'Convert files online with REST API from ConvertAPI.com',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cf_convertapi_form'),
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'cf_convertapi.admin.inc',
+    'file path' => drupal_get_path('module', 'cf_convertapi'),
+    'weight' => 40,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_convertfile_info().
+ *
+ * Register our handler and formats with convertfile module.
+ */
+function cf_convertapi_convertfile_info() {
+  $types = array();
+  $types['cf_convertapi_pdf'] = '.pdf (application/pdf)';
+
+  return array(
+    'cf_convertapi' => array(
+      'name' => 'ConvertAPI.com',
+      'types' => $types,
+    ),
+  );
+}
