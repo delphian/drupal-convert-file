@@ -323,15 +323,57 @@ function convertfile_validate_conversion($file, $instance) {
 }
 
 /**
+ * Search out and find all fields that use our widgets.
+ */
+function convertfile_find_widgets($widget, $reset = FALSE) {
+  if (!$reset && ($cache = cache_get('convertfile_find_widget_' . $widget, 'cache'))) {
+    $data = $cache->data;
+  }
+  else {
+    $data = array();
+    $instances = field_info_instances();
+    foreach($instances as $entity_key => $entity) {
+      foreach($entity as $bundle_key => $bundle) {
+        foreach($bundle as $field_key => $field) {
+          $type = $field['widget']['type'];
+          if ($type == $widget) {
+            $data[] = "{$entity_key} : {$bundle_key} : {$field_key}";
+          }
+        }
+      }
+    }
+    cache_set('convertfile_find_widgets', $data, 'cache');
+  }
+
+  return $data;
+}
+
+/**
  * Implements hook_help().
  */
 function convertfile_help($path, $arg) {
-  switch ($path) {
-    // Main module help for the convertfile module
-    case 'admin/help#convertfile':
-      return '<p>' . t('Convert File adds a new widget for file and image fields named <u>Convert File</u> and <u>Convert Image</u>. The settings for these widget operate exactly as the default except for providing extra configuration that allow for automatic conversion of the file submitted to the field. See <a href="@convertfile">Convert File Settings</a> for more information.', array('@convertfile' => url('admin/config/convertfile/settings'))) . '</p>';
-    case 'admin/config/convertfile/settings':
-      return '<p>' . t('Edit a <a href="@convertfile">content type</a> and set a file or image field to use the new <u>Convert File</u> or <u>Convert Image</u> widgets. Include the converted format file extension in the accepted formats field.', array('@convertfile' => url('admin/structure/types'))) . '</p>';
+  // If help is empty at end of function then NULL will be returned.
+  $help = '';
 
+  // Settings page.
+  if ($path == 'admin/config/convertfile/settings') {
+    // Help text if no handlers have been enabled.
+    $handlers = convertfile_collect_info();
+    if (empty($handlers)) {
+      $help .= '<p>' . t('You must have at least one handler enabled for this module to do anything usefull.') . '</p>';
+    }
+    // Help text if no widgets have been configured yet.
+    $images = convertfile_find_widgets('convertfile_image');
+    $files = convertfile_find_widgets('convertfile_file');
+    if (empty($images) && empty($files)) {
+      $help .= '<p>' . t('Edit a <a href="@convertfile">content type</a> and set a file or image field to use the new <u>Convert File</u> or <u>Convert Image</u> widgets. Include the converted format file extension in the accepted formats field.', array('@convertfile' => url('admin/structure/types'))) . '</p>';
+    }
   }
+
+  // Main module help for the convertfile module
+  if ($path == 'admin/help#convertfile') {
+    $help .= '<p>' . t('Convert File adds a new widget for file and image fields named <u>Convert File</u> and <u>Convert Image</u>. The settings for these widget operate exactly as the default except for providing extra configuration that allow for automatic conversion of the file submitted to the field. See <a href="@convertfile">Convert File Settings</a> for more information.', array('@convertfile' => url('admin/config/convertfile/settings'))) . '</p>';
+  }
+
+  return (strlen($help)) ? $help : NULL;
 }

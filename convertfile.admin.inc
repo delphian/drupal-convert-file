@@ -206,29 +206,3 @@ function convertfile_watchdog_form() {
 
   return $build;
 }
-
-/**
- * Search out and find all fields that use our widgets.
- */
-function convertfile_find_widgets($widget, $reset = FALSE) {
-  if (!$reset && ($cache = cache_get('convertfile_find_widget_' . $widget, 'cache'))) {
-    $data = $cache->data;
-  }
-  else {
-    $data = array();
-    $instances = field_info_instances();
-    foreach($instances as $entity_key => $entity) {
-      foreach($entity as $bundle_key => $bundle) {
-        foreach($bundle as $field_key => $field) {
-          $type = $field['widget']['type'];
-          if ($type == $widget) {
-            $data[] = "{$entity_key} : {$bundle_key} : {$field_key}";
-          }
-        }
-      }
-    }
-    cache_set('convertfile_find_widgets', $data, 'cache');
-  }
-
-  return $data;
-}
