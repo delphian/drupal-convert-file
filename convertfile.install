@@ -14,7 +14,7 @@
 function convertfile_enable() {
   // Generate a friendly message to inform the admin what to do next after
   // enabling the module.
-  drupal_set_message(t('Please configure the module at') . ' <a href="/admin/config/convertfile/config">/admin/config/convertfile/config</a>', 'status');
+  drupal_set_message(t('Please configure the module at') . ' <a href="/admin/config/convertfile/settings">/admin/config/convertfile/settings</a>', 'status');
 }
 
 /**

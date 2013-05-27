@@ -80,11 +80,43 @@ function convertfile_config_form_submit($form_id, &$form_state) {
  * Display all handlers.
  */
 function convertfile_handler_form() {
+  // Display some helpful text if no handler's have been installed yet.
+  if (!$info = convertfile_collect_info(TRUE)) {
+    $form['hint'] = array(
+      '#type' => 'markup',
+      '#markup' => '<p>No file conversion handlers have been installed. You must ' .
+        'install at least one handler to use this module. Convert File comes ' .
+        'with a default handler to compress uploaded text files.</p>',
+    );
+    $form['enable'] = array(
+      '#title' => 'Enable Compress',
+      '#type' => 'checkbox',
+    );
+  }
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Update'),
   );
   return $form;
+}
+
+/**
+ * Submit handler for convertfile_handler_form.
+ *
+ * @see convertfile_handler_form()
+ */
+function convertfile_handler_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+  if (isset($values['enable']) && $values['enable']) {
+    if (module_enable(array('cf_compress'), TRUE)) {
+      menu_rebuild();
+    } else {
+      drupal_set_message('Could not enable compress.', 'error');
+    }
+  }
+
+  drupal_set_message(t('Settings have been updated.'));
 }
 
 /**
