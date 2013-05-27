@@ -18,11 +18,6 @@ function cf_compress_form() {
     '#type' => 'markup',
     '#markup' => '<h3>Compress</h3>',
   );
-  $form['enable'] = array(
-    '#type' => 'checkbox',
-    '#title' => 'Enable handler.',
-    '#default_value' => variable_get('cf_compress_enable', TRUE),
-  );
 
   $markup = '<p>This handler will convert to the following formats:</p>';
   // Create list of formats.

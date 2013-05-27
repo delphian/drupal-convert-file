@@ -19,8 +19,6 @@ function cf_compress_enable() {
  * Implements hook_install().
  */
 function cf_compress_install() {
-  // By default the module will be enabled for conversions.
-  variable_set('cf_compress_enable', TRUE);
 }
 
 /**

@@ -268,11 +268,16 @@ function convertfile_validate_conversion($file, $instance) {
   $report = array();
   $settings = $instance['widget']['settings'];
 
+  $orig_file = clone $file;
+
   // Everything is rules based.
   rules_invoke_event('convertfile_request', $file, $instance);
 
   // Because the destination was messed with, make sure its still unique.
   $file->destination = file_destination($file->destination, FILE_EXISTS_RENAME);
+
+  watchdog('convertfile', "Saved: {$orig_file->filename} To: {$file->filename} " . 
+    "({$file->destination})", NULL, WATCHDOG_INFO);
 
   return $report;
 }

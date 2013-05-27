@@ -41,22 +41,26 @@ function cf_compress_rules_action_info() {
   );
 }
 
+/**
+ * Rules action to gzip a file.
+ *
+ * @see cf_compress_rules_action_info()
+ */
 function cf_compress_action_gzip($file, $instance) {
-  if (variable_get('cf_compress_enable', TRUE) == TRUE) {
-    $settings = $instance['widget']['settings'];
-    $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
-    $base = pathinfo($file->filename, PATHINFO_FILENAME);
-    $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
+  $settings = $instance['widget']['settings'];
+  $orig_file = $file;
+  $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
+  $base = pathinfo($file->filename, PATHINFO_FILENAME);
+  $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
 
-    $contents = file_get_contents($file->uri);
-    $fp = gzopen($file->uri, 'w9');
-    gzwrite($fp, $contents);
-    gzclose($fp);
+  $contents = file_get_contents($file->uri);
+  $fp = gzopen($file->uri, 'w9');
+  gzwrite($fp, $contents);
+  gzclose($fp);
 
-    $ext_new = 'gz';
-    $file->filename = $base . '.' . $ext . '.' . $ext_new;
-    $file->filesize = filesize($file->uri);
-    $file->filemime = file_get_mimetype($file->filename);
-    $file->destination = $file->destination . '.' . $ext_new;
-  }
+  $ext_new = 'gz';
+  $file->filename = $base . '.' . $ext . '.' . $ext_new;
+  $file->filesize = filesize($file->uri);
+  $file->filemime = file_get_mimetype($file->filename);
+  $file->destination = $file->destination . '.' . $ext_new;
 }
