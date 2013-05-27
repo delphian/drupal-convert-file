@@ -11,6 +11,8 @@
  * Menu callback.
  *
  * Generate configuration settings page.
+ *
+ * @see rules_admin_reaction_overview()
  */
 function convertfile_config_form() {
 
@@ -57,7 +59,8 @@ function convertfile_config_form() {
     'active' => TRUE,
     'tags' => array('convertfile'),
   );
-  $options = array('show plugin' => FALSE);
+  $base_path = 'admin/config/workflow/rules/reaction';
+  $options = array('show plugin' => FALSE, 'base path' => $base_path);
   $form['active'] = rules_ui()->overviewTable($conditions, $options);
   $form['active']['#caption'] = t('Active rules');
   $form['active']['#empty'] = t('There are no active rules. <a href="!url">Add new rule</a>.', array('!url' => url('admin/config/workflow/rules/reaction/add')));
