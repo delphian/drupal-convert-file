@@ -48,7 +48,6 @@ function cf_compress_rules_action_info() {
  */
 function cf_compress_action_gzip($file, $instance) {
   $settings = $instance['widget']['settings'];
-  $orig_file = $file;
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
   $base = pathinfo($file->filename, PATHINFO_FILENAME);
   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);

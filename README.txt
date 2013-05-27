@@ -17,49 +17,55 @@ gzip conversions.
 ```php
 /**
  * Implements hook_convertfile_info().
+ *
+ * Register our handler and formats with convertfile module.
  */
-function convertfile_convertfile_info() {
+function cf_compress_convertfile_info() {
+  $types = array();
+  $types['cf_compress_gz'] = '.gz (application/x-gzip)';
+
   return array(
-    'convertfile' => array(
-      'name' => 'Convert File Module',
-      'callback' => 'convertfile_do_conversion',
-      'types' => array(
-        'gz' => '.gz (application/x-gzip)',
-      ),
+    'compress' => array(
+      'name' => 'Compress',
+      'callback' => NULL,
+      'types' => $types,
     ),
   );
 }
 ```
 
-The example callback below will automatically gzip all files:
+A dirty implemenation is possible by using the callback variable and filling
+it with the name of a function to do the conversion. This is not recommended,
+however as an example the entire rules functionality could be bypassed by
+calling the rules action function directly 
+`'callback' => 'cf_compress_rules_action_info'`
 
 ```php
 /**
- * Convert our files.
+ * Rules action to gzip a file.
  *
- * @todo we are messing with the destination file name, this could crash into
- * an existing filename that was not checked (with the new extension).
+ * @see cf_compress_rules_action_info()
  */
-function convertfile_do_conversion($file, $instance) {
+function cf_compress_action_gzip($file, $instance) {
   $settings = $instance['widget']['settings'];
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
   $base = pathinfo($file->filename, PATHINFO_FILENAME);
   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
 
-  // Gzip the file.
-  if ($settings['convertfile_format'] == 'gz' && $ext != 'gz') {
-    $contents = file_get_contents($file->uri);
-    $fp = gzopen($file->uri, 'w9');
-    gzwrite($fp, $contents);
-    gzclose($fp);
+  $contents = file_get_contents($file->uri);
+  $fp = gzopen($file->uri, 'w9');
+  gzwrite($fp, $contents);
+  gzclose($fp);
 
-    $ext_new = 'gz';
-    $file->filename = $base . '.' . $ext . '.' . $ext_new;
-    $file->filesize = filesize($file->uri);
-    $file->filemime = file_get_mimetype($file->filename);
-    $file->destination = $file->destination . '.' . $ext_new;
-  }
-
-  return array();
+  $ext_new = 'gz';
+  $file->filename = $base . '.' . $ext . '.' . $ext_new;
+  $file->filesize = filesize($file->uri);
+  $file->filemime = file_get_mimetype($file->filename);
+  $file->destination = $file->destination . '.' . $ext_new;
 }
+
 ```
+
+Please do not contribute any handlers that use a function callback. Rules is
+the recommended method of doing conversions. Copy and modify the
+cf_compress handler as a template for a new handler.

@@ -263,6 +263,8 @@ function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, 
 
 /**
  * Validator. Will call any registered handlers.
+ *
+ * @todo bypass rules invoke if callback is provided.
  */
 function convertfile_validate_conversion($file, $instance) {
   $report = array();
