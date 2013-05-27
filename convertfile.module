@@ -271,14 +271,24 @@ function convertfile_validate_conversion($file, $instance) {
   $settings = $instance['widget']['settings'];
 
   $orig_file = clone $file;
+  $info = convertfile_collect_info();
+  $name = $info[$settings['convertfile_provider']]['name'];
+  $function = isset($info[$settings['convertfile_provider']]['callback']) ?
+    $info[$settings['convertfile_provider']]['callback'] : NULL;
 
-  // Everything is rules based.
-  rules_invoke_event('convertfile_request', $file, $instance);
+  if ($function && function_exists($function)) {
+    // This is not intended for contributed code.
+    $function($file, $instance);
+  }
+  else {
+    // Everything _should be_ rules based.
+    rules_invoke_event('convertfile_request', $file, $instance);
+  }
 
   // Because the destination was messed with, make sure its still unique.
   $file->destination = file_destination($file->destination, FILE_EXISTS_RENAME);
 
-  watchdog('convertfile', "Saved: {$orig_file->filename} To: {$file->filename} " . 
+  watchdog('convertfile', "{$name} Saved: {$orig_file->filename} To: {$file->filename} " . 
     "({$file->destination})", NULL, WATCHDOG_INFO);
 
   return $report;

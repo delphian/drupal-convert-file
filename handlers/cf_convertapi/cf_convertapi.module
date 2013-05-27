@@ -37,7 +37,12 @@ function cf_convertapi_convertfile_info() {
   return array(
     'cf_convertapi' => array(
       'name' => 'ConvertAPI.com',
+      'callback' => 'cf_convertapi_do_conversion',
       'types' => $types,
     ),
   );
+}
+
+function cf_convertapi_do_conversion($file, $instance) {
+  dpm('OK WE GOT IT!');
 }
