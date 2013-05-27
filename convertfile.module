@@ -20,9 +20,8 @@ function convertfile_menu() {
     'file path' => drupal_get_path('module', 'system'),
   );
   // Provide a page to handle general settings and configuration.
-  $items['admin/config/convertfile/config'] = array(
-    'type' => MENU_LOCAL_TASK,
-    'title' => 'Configuration',
+  $items['admin/config/convertfile/settings'] = array(
+    'title' => 'Settings',
     'description' => 'Configure Convert File options and settings.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('convertfile_config_form'),
@@ -31,8 +30,12 @@ function convertfile_menu() {
     'file path' => drupal_get_path('module', 'convertfile'),
     'weight' => 10,
   );
+  $items['admin/config/convertfile/settings/basic'] = array(
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'title' => 'Settings',
+  );
   // Provide a page to handle watchdog error messages.
-  $items['admin/config/convertfile/watchdog'] = array(
+  $items['admin/config/convertfile/settings/watchdog'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'Logs',
     'description' => 'View debug and error messages.',
@@ -44,7 +47,7 @@ function convertfile_menu() {
     'weight' => 20,
   );
   // Provide a page to handle watchdog error messages.
-  $items['admin/config/convertfile/handler'] = array(
+  $items['admin/config/convertfile/settings/handler'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'Handlers',
     'description' => 'All installed file conversion handlers.',
@@ -54,6 +57,10 @@ function convertfile_menu() {
     'file' => 'convertfile.admin.inc',
     'file path' => drupal_get_path('module', 'convertfile'),
     'weight' => 30,
+  );
+  $items['admin/config/convertfile/settings/handler/config'] = array(
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'title' => 'Config',
   );
 
   return $items;
@@ -261,16 +268,11 @@ function convertfile_validate_conversion($file, $instance) {
   $report = array();
   $settings = $instance['widget']['settings'];
 
-  $provider = $settings['convertfile_provider'];
-  $info = convertfile_collect_info();
-  if (isset($info[$provider]['callback'])) {
-    $callback = $info[$provider]['callback'];
-    if (function_exists($callback)) {
-      $report = $callback($file, $instance);
-    }
-    // Because the destination was messed with, make sure its still unique.
-    $file->destination = file_destination($file->destination, FILE_EXISTS_RENAME);
-  }
+  // Everything is rules based.
+  rules_invoke_event('convertfile_request', $file, $instance);
+
+  // Because the destination was messed with, make sure its still unique.
+  $file->destination = file_destination($file->destination, FILE_EXISTS_RENAME);
 
   return $report;
 }

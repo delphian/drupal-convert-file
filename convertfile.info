@@ -3,3 +3,7 @@ description = "Automatically convert the format of a file when it is saved."
 core = 7.x
 package = Convert File
 configure = admin/config/convertfile/config
+
+files[] = cf_compress.rules.inc
+
+dependencies[] = rules 

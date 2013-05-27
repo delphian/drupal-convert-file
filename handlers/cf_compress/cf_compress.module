@@ -10,7 +10,7 @@
  */
 function cf_compress_menu() {
   // Provide a page to handle watchdog error messages.
-  $items['admin/config/convertfile/handler/compress'] = array(
+  $items['admin/config/convertfile/settings/handler/compress'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'Compress',
     'description' => 'Compress files.',
@@ -31,52 +31,13 @@ function cf_compress_menu() {
  * Register our handler and formats with convertfile module.
  */
 function cf_compress_convertfile_info() {
+  $types = array();
+  $types['gz'] = '.gz (application/x-gzip)';
+
   return array(
     'compress' => array(
       'name' => 'Compress',
-      'callback' => 'cf_compress_do_conversion',
-      'types' => array(
-        'gz' => '.gz (application/x-gzip)',
-      ),
+      'types' => $types,
     ),
   );
-}
-
-/**
- * Convert file as it exists in the temporary upload directory before
- * drupal relocates it.
- *
- * @param stdClass $file
- *   A file object as returned by file_load(). This will be modified by
- *   our function.
- * @param array $instance
- *   The field instance that received this file.
- *
- * @return array
- *   Each element of array should be a string containing and error message,
- *   otherwise an empty error if no errors.
- */
-function cf_compress_do_conversion($file, $instance) {
-  if (variable_get('cf_compress_enable', TRUE) == TRUE) {
-    $settings = $instance['widget']['settings'];
-    $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
-    $base = pathinfo($file->filename, PATHINFO_FILENAME);
-    $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
-
-    // Gzip the file.
-    if ($settings['convertfile_format'] == 'gz' && $ext != 'gz') {
-      $contents = file_get_contents($file->uri);
-      $fp = gzopen($file->uri, 'w9');
-      gzwrite($fp, $contents);
-      gzclose($fp);
-
-      $ext_new = 'gz';
-      $file->filename = $base . '.' . $ext . '.' . $ext_new;
-      $file->filesize = filesize($file->uri);
-      $file->filemime = file_get_mimetype($file->filename);
-      $file->destination = $file->destination . '.' . $ext_new;
-    }
-  }
-
-  return array();
 }
