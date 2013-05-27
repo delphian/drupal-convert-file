@@ -18,20 +18,20 @@ function convertfile_config_form() {
 
   $form['installed_on'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Widgets installed',
+    '#title' => 'Widgets assigned to fields',
     '#collapsible' => TRUE, 
     '#collapsed' => TRUE,
   );
   // Display all fields that are using the convertfile_file widget.
   if ($widgets = convertfile_find_widgets('convertfile_image')) {
-    $markup = '<h5><u>Convert File</u> widget is installed on:</h5><ul>';
+    $markup = '<div><u>Convert File</u> widget is assigned on:</div><ul>';
     foreach($widgets as $widget) {
       $markup .= "<li>{$widget}</li>";
     }
     $markup .= '</ul>';
   }
   else {
-    $markup = '<h5>No <u>Convert File</u> widgets are installed</h5>';
+    $markup = '<div>No <u>Convert File</u> widgets are assigned</div>';
   }
   $form['installed_on']['convertfile_file_installed'] = array(
     '#type' => 'markup',
@@ -39,14 +39,14 @@ function convertfile_config_form() {
   );
   // Display all fields that are using the convertfile_file widget.
   if ($widgets = convertfile_find_widgets('convertfile_file')) {
-    $markup = '<h5><u>Convert Image</u> widget is installed on:</h5><ul>';
+    $markup = '<div><u>Convert Image</u> widget is assigned on:</div><ul>';
     foreach($widgets as $widget) {
       $markup .= "<li>{$widget}</li>";
     }
     $markup .= '</ul>';
   }
   else {
-    $markup = '<h5>No <u>Convert Image</u> widgets are installed</h5>';
+    $markup = '<div>No <u>Convert Image</u> widgets are assigned</div>';
   }
   $form['installed_on']['convertfile_image_installed'] = array(
     '#type' => 'markup',
