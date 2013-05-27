@@ -23,11 +23,11 @@ function convertfile_rules_event_info() {
 function convertfile_rules_condition_info() {
   return array(
     'convertfile_condition_file_extension' => array(
-      'label' => t('File name extension'),
+      'label' => t('Original Format'),
       'group' => 'Convert File',
       'parameter' => array(
         'file' => array('type' => 'file', 'label' => t('The file object')),
-        'extension' => array('type' => 'text', 'label' => t('The extension is')),
+        'extension' => array('type' => 'text', 'label' => t('The original extension is')),
       ),
       'module' => 'convertfile',
     ),
@@ -40,6 +40,19 @@ function convertfile_rules_condition_info() {
           'type' => 'list<text>', 
           'label' => t('The provider is'),
           'options list' => 'convertfile_condition_provider_list',
+        ),
+      ),
+      'module' => 'convertfile',
+    ),
+    'convertfile_condition_format' => array(
+      'label' => t('Conversion format'),
+      'group' => 'Convert File',
+      'parameter' => array(
+        'instance' => array('type' => 'struct', 'label' => t('File field instance')),
+        'format' => array(
+          'type' => 'list<text>', 
+          'label' => t('The requested format is'),
+          'options list' => 'convertfile_condition_format_list',
         ),
       ),
       'module' => 'convertfile',
@@ -74,7 +87,22 @@ function convertfile_condition_provider($instance, $provider) {
 }
 
 /**
+ * Condition convertfile_condition_provider
+ */
+function convertfile_condition_format($instance, $format) {
+  $report = FALSE;
+  $settings = $instance['widget']['settings'];
+  if (array_key_exists($settings['convertfile_format'], $format)) {
+    $report = TRUE;
+  }
+
+  return $report;
+}
+
+/**
  * Construct options list for condition convertfile_condition_provider.
+ *
+ * @see convertfile_rules_condition_info()
  */
 function convertfile_condition_provider_list(RulesAbstractPlugin $element) {
   $providers = array('convertfile_none' => '- None -');
@@ -85,4 +113,22 @@ function convertfile_condition_provider_list(RulesAbstractPlugin $element) {
   }
 
   return $providers;
+}
+
+/**
+ * Construct options list for condition convertfile_condition_format.
+ *
+ * @see convertfile_rules_condition_info()
+ */
+function convertfile_condition_format_list(RulesAbstractPlugin $element) {
+  $formats = array('convertfile_none' => '- None -');
+  if (is_array($info = convertfile_collect_info())) {
+    foreach($info as $mn_provider => $provider) {
+      foreach($provider['types'] as $mn_type => $type) {
+        $formats[$mn_type] = $type;
+      }
+    }
+  }
+
+  return $formats;
 }

@@ -4,8 +4,8 @@ function cf_compress_default_rules_configuration() {
   $configs = array();
 
   // Automkatically gzip all text files uploaded to 'convert_file' widgets.
-  $rule = '{ "cf_compress_gzip_text" : {
-    "LABEL" : "Compress text files uploaded",
+  $rule = '{ "cf_compress_gzip" : {
+    "LABEL" : "Compress files upload with gzip",
     "PLUGIN" : "reaction rule",
     "TAGS" : [ "compress", "convertfile" ],
     "REQUIRES" : [ "convertfile", "cf_compress", "rules" ],
@@ -16,7 +16,11 @@ function cf_compress_default_rules_configuration() {
           "provider" : { "value" : { "compress" : "compress" } }
         }
       },
-      { "convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "txt" } }
+      { "convertfile_condition_format" : {
+          "instance" : [ "instance" ],
+          "format" : { "value" : { "cf_compress_gz" : "cf_compress_gz" } }
+        }
+      }
     ],
     "DO" : [
       { "cf_compress_gzip" : { "file" : [ "file" ], "instance" : [ "instance" ] } },

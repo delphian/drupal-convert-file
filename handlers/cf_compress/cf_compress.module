@@ -32,7 +32,7 @@ function cf_compress_menu() {
  */
 function cf_compress_convertfile_info() {
   $types = array();
-  $types['gz'] = '.gz (application/x-gzip)';
+  $types['cf_compress_gz'] = '.gz (application/x-gzip)';
 
   return array(
     'compress' => array(
