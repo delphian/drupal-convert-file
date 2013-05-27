@@ -136,6 +136,8 @@ function convertfile_handler_form_submit($form, &$form_state) {
  * Menu callback.
  *
  * Display all debug and error messages from watchdog for our module.
+ *
+ * @see dblog_overview()
  */
 function convertfile_watchdog_form() {
   $rows = array();
@@ -195,6 +197,12 @@ function convertfile_watchdog_form() {
     '#empty' => t('No log messages available.'),
   );
   $build['dblog_pager'] = array('#theme' => 'pager');
+
+  // Add css.
+  drupal_add_css(
+    drupal_get_path('module', 'dblog') . '/dblog.css', 
+    array('group' => CSS_DEFAULT, 'every_page' => FALSE)
+  );
 
   return $build;
 }
