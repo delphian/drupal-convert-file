@@ -264,7 +264,17 @@ function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, 
 /**
  * Validator. Will call any registered handlers.
  *
- * @todo bypass rules invoke if callback is provided.
+ * @param stdClass $file
+ *   File object that is being readied to be moved from temporary server
+ *   upload bin.
+ * @param array $instance
+ *   Field instance that this file was submitted to.
+ *
+ * @return array
+ *   An empty array on success. Contains at least one element of error message
+ *   on failure.
+ *
+ * @see convertfile_field_widget_form()
  */
 function convertfile_validate_conversion($file, $instance) {
   $report = array();
@@ -278,11 +288,16 @@ function convertfile_validate_conversion($file, $instance) {
 
   if ($function && function_exists($function)) {
     // This is not intended for contributed code.
-    $report = $function($file, $instance);
+    if (!$function($file, $instance)) {
+      $report[] = "File conversion by {$name} callback failed.";
+    }
   }
   else {
     // Everything _should be_ rules based.
     rules_invoke_event('convertfile_request', $file, $instance);
+    if (isset($file->convertfile_error)) {
+      $report[] = "File conversion by {$name} rule failed.";
+    }
   }
 
   // Because the destination was messed with, make sure its still unique.

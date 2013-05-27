@@ -43,8 +43,22 @@ function cf_convertapi_convertfile_info() {
   );
 }
 
+/**
+ * File conversion callback.
+ *
+ * @param stdClass $file
+ *   File object that is being readied to be moved from temporary server
+ *   upload bin.
+ * @param array $instance
+ *   Field instance that this file was submitted to.
+ *
+ * @return bool
+ *   TRUE if conversion was success, FALSE otherwise.
+ *
+ * @see cf_convertapi_convertfile_info()
+ */
 function cf_convertapi_do_conversion($file, $instance) {
-  $report = array();
+  $report = FALSE;
   $settings = $instance['widget']['settings'];
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
   $base = pathinfo($file->filename, PATHINFO_FILENAME);
@@ -62,15 +76,14 @@ function cf_convertapi_do_conversion($file, $instance) {
       $file->filesize = filesize($file->uri);
       $file->filemime = file_get_mimetype($file->filename);
       $file->destination = $file->destination . '.' . $ext_new;
+      $report = TRUE;
     }
     else {
       watchdog('convertfile', 'ConvertAPI could not write file to disk.', NULL, WATCHDOG_ERROR);
-      $report[] = 'error';
     }
   }
   else {
     watchdog('convertfile', 'ConvertAPI could not convert file: @message.', array('@message' => $message), WATCHDOG_ERROR);
-    $report[] = 'error';
   }
 
   return $report;
