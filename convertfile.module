@@ -284,7 +284,9 @@ function convertfile_help($path, $arg) {
   switch ($path) {
     // Main module help for the convertfile module
     case 'admin/help#convertfile':
-      return '<p>' . t('Convert File adds extra configuration fields to the "file" and "image" widgets which allow automatic conversion of the file submitted to the field. See <a href="@convertfile">Convert File Settings</a> for more information.', array('@convertfile' => url('admin/config/convertfile/settings'))) . '</p>';
+      return '<p>' . t('Convert File adds a new widget for file and image fields named <u>Convert File</u> and <u>Convert Image</u>. The settings for these widget operate exactly as the default except for providing extra configuration that allow for automatic conversion of the file submitted to the field. See <a href="@convertfile">Convert File Settings</a> for more information.', array('@convertfile' => url('admin/config/convertfile/settings'))) . '</p>';
+    case 'admin/config/convertfile/settings':
+      return '<p>' . t('Edit a <a href="@convertfile">content type</a> and set a file or image field to use the new <u>Convert File</u> or <u>Convert Image</u> widgets.', array('@convertfile' => url('admin/structure/types'))) . '</p>';
 
   }
 }

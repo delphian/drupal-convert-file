@@ -13,49 +13,44 @@
  * Generate configuration settings page.
  */
 function convertfile_config_form() {
-  // $form['gplus_api_key'] = array(
-  //   '#prefix' => '<ul><li>' . t('Visit') . ' <a href="/admin/structure/block">blocks</a> ' . t('to position this block.') . '</li><li>' . t('Visit') . ' <a href="/admin/reports/dblog?type[]=convertfile">Recent log messages</a> ' . t('for any errors.') . '</li></ul>',
-  //   '#type' => 'textfield',
-  //   '#title' => t('Google API Key'),
-  //   '#description' => t('Your google api key. This is the Simple API Access Key (for browser apps). Visit the Google') . ' <a href="https://code.google.com/apis/console#access">API Console</a> ' . t('for more information.'),
-  //   '#default_value' => variable_get('convertfile_api_key', FALSE),
-  // );
-  // $form['gplus_profile_id'] = array(
-  //   '#type' => 'textfield',
-  //   '#title' => t('G+ User Profile Identification'),
-  //   '#description' => t('The Gplus user profile ID to pull posts from. Viewing a public profile will expose this ID in the url.'),
-  //   '#default_value' => variable_get('convertfile_profile_id', FALSE),
-  // );
-  // $form['gplus_max_results'] = array(
-  //   '#type' => 'textfield',
-  //   '#title' => t('Max Results'),
-  //   '#description' => t('Number of results to fetch and display.'),
-  //   '#default_value' => variable_get('convertfile_max_results', 20),
-  // );
-  // $form['gplus_time_format'] = array(
-  //   '#type' => 'textfield',
-  //   '#title' => t('Timestamp Format'),
-  //   '#description' => 'See PHP\'s <a href="http://php.net/manual/en/function.date.php">date()</a> documentation.',
-  //   '#default_value' => variable_get('convertfile_time_format', 'Y.m.d H:i'),
-  // );
 
-  // $form['gplus_container'] = array(
-  //   '#type' => 'fieldset',
-  //   '#title' => t('Advanced'),
-  //   '#collapsible' => TRUE,
-  //   '#collapsed' => TRUE,
-  // );
-  // $form['gplus_container']['gplus_cache_minutes'] = array(
-  //   '#type' => 'textfield',
-  //   '#title' => t('Cache Timeout'),
-  //   '#description' => t('Number of minutes to cache the feed until another request is sent.'),
-  //   '#default_value' => variable_get('convertfile_cache_minutes', 5),
-  // );
-  // $form['gplus_container']['gplus_record_api'] = array(
-  //   '#type' => 'checkbox',
-  //   '#title' => t('Record API Calls'),
-  //   '#default_value' => variable_get('convertfile_record_api', 0),
-  // );
+  $form['installed_on'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Widgets installed on fields',
+    '#collapsible' => TRUE, 
+    '#collapsed' => TRUE,
+  );
+  // Display all fields that are using the convertfile_file widget.
+  if ($widgets = convertfile_find_widgets('convertfile_image')) {
+    $markup = '<h5><u>Convert File</u> widget is installed on:</h5><ul>';
+    foreach($widgets as $widget) {
+      $markup .= "<li>{$widget}</li>";
+    }
+    $markup .= '</ul>';
+  }
+  else {
+    $markup = '<h5>No <u>Convert File</u> widgets are installed</h5>';
+  }
+  $form['installed_on']['convertfile_file_installed'] = array(
+    '#type' => 'markup',
+    '#markup' => $markup,
+  );
+  // Display all fields that are using the convertfile_file widget.
+  if ($widgets = convertfile_find_widgets('convertfile_file')) {
+    $markup = '<h5><u>Convert Image</u> widget is installed on:</h5><ul>';
+    foreach($widgets as $widget) {
+      $markup .= "<li>{$widget}</li>";
+    }
+    $markup .= '</ul>';
+  }
+  else {
+    $markup = '<h5>No <u>Convert Image</u> widgets are installed</h5>';
+  }
+  $form['installed_on']['convertfile_image_installed'] = array(
+    '#type' => 'markup',
+    '#markup' => $markup,
+  );
+
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -184,4 +179,30 @@ function convertfile_watchdog_form() {
   $build['dblog_pager'] = array('#theme' => 'pager');
 
   return $build;
+}
+
+/**
+ * Search out and find all fields that use our widgets.
+ */
+function convertfile_find_widgets($widget, $reset = FALSE) {
+  if (!$reset && ($cache = cache_get('convertfile_find_widget_' . $widget, 'cache'))) {
+    $data = $cache->data;
+  }
+  else {
+    $data = array();
+    $instances = field_info_instances();
+    foreach($instances as $entity_key => $entity) {
+      foreach($entity as $bundle_key => $bundle) {
+        foreach($bundle as $field_key => $field) {
+          $type = $field['widget']['type'];
+          if ($type == $widget) {
+            $data[] = "{$entity_key}:{$bundle_key}:{$field_key}";
+          }
+        }
+      }
+    }
+    cache_set('convertfile_find_widgets', $data, 'cache');
+  }
+
+  return $data;
 }
