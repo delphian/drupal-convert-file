@@ -43,7 +43,8 @@ function cf_convertapi_api_call($fileToConvert, $apiKey, &$message) {
       'ApiKey' => $apiKey,
       'file'=> "@" . $fileToConvert
     );
-    $ch = curl_init("http://do.convertapi.com/word2pdf");
+    //$ch = curl_init("http://do.convertapi.com/word2pdf");
+    $ch = curl_init("http://www.google.com");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_HEADER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);
@@ -57,28 +58,26 @@ function cf_convertapi_api_call($fileToConvert, $apiKey, &$message) {
 
     if (0 < $headers['http_code'] && $headers['http_code'] < 400) {
       // Check for Result = true
-      if (in_array('Result',array_keys($header)) ?  !$header['Result']=="True" : true) {
-        $message = "Something went wrong with request, did not reach ConvertApi service.<br />";
+      if (in_array('Result', array_keys($header)) ? !$header['Result']=="True" : true) {
+        $message = "Something went wrong with request, did not reach ConvertApi service.";
         return false;
       }
       // Check content type 
       if ($headers['content_type'] <> "application/pdf") {
-        $message = "Exception Message : returned content is not PDF file.<br />";
+        $message = "Exception Message : returned content is not PDF file.";
         return false;
       }
-      //$fp = fopen($pathToSaveOutputFile.$fileName, "wbx");
-      //fwrite($fp, $body);
 
       $message = "The conversion was successful! The word file $fileToConvert converted to PDF and saved at $pathToSaveOutputFile$fileName";
       return $body;
     }
     else {
-      $message = "Exception Message : ".$result .".<br />Status Code :".$headers['http_code'].".<br />";
+      $message = "Exception Message: " . $result . ". Headers: " . print_r($headers, TRUE);
       return false; 
     }
   }
   catch (Exception $e) {
-    $message = "Exception Message :" . $e . Message."</br>";
+    $message = "Exception Message: " . $e->getMessage();
     return false;
   }
 }

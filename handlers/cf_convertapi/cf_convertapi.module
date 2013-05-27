@@ -44,5 +44,34 @@ function cf_convertapi_convertfile_info() {
 }
 
 function cf_convertapi_do_conversion($file, $instance) {
-  dpm('OK WE GOT IT!');
+  $report = array();
+  $settings = $instance['widget']['settings'];
+  $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
+  $base = pathinfo($file->filename, PATHINFO_FILENAME);
+  $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
+  $blob = file_get_contents($file->uri);
+  $key = variable_get('cf_convertapi_api_key');
+  $message = NULL;
+
+  module_load_include('inc', 'cf_convertapi', 'cf_convertapi.api');
+  if ($new_blob = cf_convertapi_api_call($blob, $key, $message)) {
+    $fp = fopen($file->uri, "wbx");
+    if (fwrite($fp, $body)) {
+      $ext_new = 'pdf';
+      $file->filename = $base . '.' . $ext . '.' . $ext_new;
+      $file->filesize = filesize($file->uri);
+      $file->filemime = file_get_mimetype($file->filename);
+      $file->destination = $file->destination . '.' . $ext_new;
+    }
+    else {
+      watchdog('convertfile', 'ConvertAPI could not write file to disk.', NULL, WATCHDOG_ERROR);
+      $report[] = 'error';
+    }
+  }
+  else {
+    watchdog('convertfile', 'ConvertAPI could not convert file: @message.', array('@message' => $message), WATCHDOG_ERROR);
+    $report[] = 'error';
+  }
+
+  return $report;
 }
