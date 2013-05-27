@@ -6,6 +6,7 @@
  */
 
 define('CF_CONVERTAPI_TEXT2PDF', 'http://do.convertapi.com/text2pdf');
+define('CF_CONVERTAPI_WORD2PDF', 'http://do.convertapi.com/word2pdf');
 
 /**
  * Implements of hook_menu().
@@ -33,8 +34,9 @@ function cf_convertapi_menu() {
  * Register our handler and formats with convertfile module.
  */
 function cf_convertapi_convertfile_info() {
-  $types = array();
-  $types['cf_convertapi_pdf'] = '.pdf (application/pdf)';
+  $types = array(
+    'cf_convertapi_pdf' => '.pdf (application/pdf)',
+  );
 
   return array(
     'cf_convertapi' => array(
@@ -65,14 +67,20 @@ function cf_convertapi_do_conversion($file, $instance) {
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
   $base = pathinfo($file->filename, PATHINFO_FILENAME);
   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
-  $blob = file_get_contents($file->uri);
   $key = variable_get('cf_convertapi_api_key');
   $message = NULL;
 
+  if ($ext == 'txt') {
+    $type = CF_CONVERTAPI_TEXT2PDF;
+  }
+  if ($ext == 'doc' || $ext == 'docx') {
+    $type = CF_CONVERTAPI_WORD2PDF;
+  }
+
   module_load_include('inc', 'cf_convertapi', 'cf_convertapi.api');
-  if ($new_blob = cf_convertapi_api_call($file->uri, $key, CF_CONVERTAPI_TEXT2PDF, $message)) {
+  if ($type && ($blob = cf_convertapi_api_call($file->uri, $key, $type, $message))) {
     $fp = fopen($file->uri, "wbx");
-    if (fwrite($fp, $body)) {
+    if (fwrite($fp, $blob)) {
       $ext_new = 'pdf';
       $file->filename = $base . '.' . $ext . '.' . $ext_new;
       $file->filesize = filesize($file->uri);
