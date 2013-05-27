@@ -16,7 +16,7 @@ function convertfile_config_form() {
 
   $form['installed_on'] = array(
     '#type' => 'fieldset',
-    '#title' => 'Widgets installed on fields',
+    '#title' => 'Widgets installed',
     '#collapsible' => TRUE, 
     '#collapsed' => TRUE,
   );
@@ -51,6 +51,21 @@ function convertfile_config_form() {
     '#markup' => $markup,
   );
 
+  // Show all of the active rules.
+  $conditions = array(
+    'plugin' => 'reaction rule', 
+    'active' => TRUE,
+    'tags' => array('convertfile'),
+  );
+  $options = array('show plugin' => FALSE);
+  $form['active'] = rules_ui()->overviewTable($conditions, $options);
+  $form['active']['#caption'] = t('Active rules');
+  $form['active']['#empty'] = t('There are no active rules. <a href="!url">Add new rule</a>.', array('!url' => url('admin/config/workflow/rules/reaction/add')));
+  // Show all of the inactive rules.
+  $conditions['active'] = FALSE;
+  $form['inactive'] = rules_ui()->overviewTable($conditions, $options);
+  $form['inactive']['#caption'] = t('Inactive rules');
+  $form['inactive']['#empty'] = t('There are no inactive rules.');
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -196,7 +211,7 @@ function convertfile_find_widgets($widget, $reset = FALSE) {
         foreach($bundle as $field_key => $field) {
           $type = $field['widget']['type'];
           if ($type == $widget) {
-            $data[] = "{$entity_key}:{$bundle_key}:{$field_key}";
+            $data[] = "{$entity_key} : {$bundle_key} : {$field_key}";
           }
         }
       }
