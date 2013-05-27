@@ -35,24 +35,24 @@ function cf_convertapi_api_parse_header($header = '') {
  */
 function cf_convertapi_api_call($fileToConvert, $apiKey, &$message) {
   try {
-    $rand = time();
-    $fileName = $rand."MyFile.pdf";
-     
     $postdata = array(
       'OutputFileName' => 'MyFile.pdf',
       'ApiKey' => $apiKey,
-      'file'=> "@" . $fileToConvert
+      'file' => '@'.$fileToConvert,
     );
     //$ch = curl_init("http://do.convertapi.com/word2pdf");
-    $ch = curl_init("http://www.google.com");
+    $ch = curl_init("http://do.convertapi.com/text2pdf");
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
     curl_setopt($ch, CURLOPT_HEADER, 1);
     curl_setopt($ch, CURLOPT_POST, 1);
     curl_setopt($ch, CURLOPT_POSTFIELDS, $postdata);
-    $result = curl_exec($ch); 
+    if (!$result = curl_exec($ch)) {
+      $message = 'Curl error: ' . curl_error($ch);
+      return false;
+    }
     $headers = curl_getinfo($ch);
     
-    $header = cf_convertapi_api_parse_header(substr($result,0,$headers["header_size"]));
+    $header = cf_convertapi_api_parse_header(substr($result, 0, $headers["header_size"]));
     $body = substr($result, $headers["header_size"]);
     curl_close($ch);
 
@@ -72,7 +72,7 @@ function cf_convertapi_api_call($fileToConvert, $apiKey, &$message) {
       return $body;
     }
     else {
-      $message = "Exception Message: " . $result . ". Headers: " . print_r($headers, TRUE);
+      $message = "Exception Message: " . $result . ". HEADERS: " . print_r($headers, TRUE);
       return false; 
     }
   }
