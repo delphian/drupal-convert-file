@@ -64,7 +64,7 @@ function cf_compress_action_gzip($file, $instance) {
   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
 
   if (($contents = file_get_contents($file->uri)) !== FALSE) {
-    if (!$fp = gzopen($file->uri, 'w9')) {
+    if ($fp = gzopen($file->uri, 'w9')) {
       if (gzwrite($fp, $contents)) {
         $ext_new = 'gz';
         $file->filename = $base . '.' . $ext . '.' . $ext_new;
