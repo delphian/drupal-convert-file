@@ -7,3 +7,4 @@ configure = /admin/config/convertfile/settings/handler/googledrive
 files[] = cf_googledrive.rules.inc
 
 dependencies[] = convertfile
+dependencies[] = libraries
