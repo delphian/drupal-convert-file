@@ -23,7 +23,7 @@ function convertfile_config_form() {
     '#collapsed' => TRUE,
   );
   // Display all fields that are using the convertfile_file widget.
-  if ($widgets = convertfile_find_widgets('convertfile_image')) {
+  if ($widgets = convertfile_find_widgets('convertfile_file')) {
     $markup = '<div><u>Convert File</u> widget is assigned on:</div><ul>';
     foreach($widgets as $widget) {
       $markup .= "<li>{$widget}</li>";
@@ -38,7 +38,7 @@ function convertfile_config_form() {
     '#markup' => $markup,
   );
   // Display all fields that are using the convertfile_file widget.
-  if ($widgets = convertfile_find_widgets('convertfile_file')) {
+  if ($widgets = convertfile_find_widgets('convertfile_image')) {
     $markup = '<div><u>Convert Image</u> widget is assigned on:</div><ul>';
     foreach($widgets as $widget) {
       $markup .= "<li>{$widget}</li>";
