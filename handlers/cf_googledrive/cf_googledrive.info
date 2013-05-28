@@ -1,0 +1,9 @@
+name = Convert File Handler Google Drive
+description = "Use Google Drive SDK to convert files."
+core = 7.x
+package = Convert File
+configure = /admin/config/convertfile/settings/handler/googledrive
+
+files[] = cf_googledrive.rules.inc
+
+dependencies[] = convertfile

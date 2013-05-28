@@ -1,0 +1,126 @@
+<?php
+
+/**
+ * @file
+ * File conversion provided by Google Drive SDK.
+ */
+
+/**
+ * Implements of hook_menu().
+ */
+function cf_googledrive_menu() {
+  // Provide a page to handle watchdog error messages.
+  $items['admin/config/convertfile/settings/handler/googledrive'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Google Drive',
+    'description' => 'File conversion provided by Google Drive.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cf_googledrive_form'),
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'cf_googledrive.admin.inc',
+    'file path' => drupal_get_path('module', 'cf_googledrive'),
+    'weight' => 40,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_convertfile_info().
+ *
+ * Register our handler and formats with convertfile module.
+ */
+function cf_googledrive_convertfile_info() {
+  $types = array(
+    'cf_googledrive_pdf' => '.pdf (application/pdf)',
+  );
+
+  return array(
+    'cf_googledrive' => array(
+      'name' => 'Google Drive',
+      'callback' => 'cf_googledrive_do_conversion',
+      'types' => $types,
+    ),
+  );
+}
+
+/**
+ * File conversion callback.
+ *
+ * @param stdClass $file
+ *   File object that is being readied to be moved from temporary server
+ *   upload bin.
+ * @param array $instance
+ *   Field instance that this file was submitted to.
+ *
+ * @return bool
+ *   TRUE if conversion was success, FALSE otherwise. In the event of a
+ *   failure $file->convertfile_error should be set with an error message.
+ *
+ * @see cf_convertapi_convertfile_info()
+ */
+function cf_googledrive_do_conversion($file, $instance) {
+  $report = FALSE;
+  $settings = $instance['widget']['settings'];
+  $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
+  $base = pathinfo($file->filename, PATHINFO_FILENAME);
+  $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
+  $message = NULL;
+
+  module_load_include('inc', 'cf_googledrive', 'cf_googledrive.api');
+
+  if ($type && ($blob = cf_googledrive_api_call($file->uri, $message))) {
+    $fp = fopen($file->uri, "wbx");
+    if (fwrite($fp, $blob)) {
+      $ext_new = 'pdf';
+      $file->filename = $base . '.' . $ext . '.' . $ext_new;
+      $file->filesize = filesize($file->uri);
+      $file->filemime = file_get_mimetype($file->filename);
+      $file->destination = $file->destination . '.' . $ext_new;
+      $report = TRUE;
+    }
+    else {
+      $file->convertfile_error = 'ConvertAPI could not write file to disk.';
+    }
+  }
+  else {
+    $file->convertfile_error = "ConvertAPI could not convert file: {$message}.";
+  }
+
+  return $report;
+}
+
+/**
+ * Implements hook_help()
+ *
+  * @see https://developers.google.com/drive/auth/web-server
+ */
+function cf_googledrive_help($path, $arg) {
+  // If help is empty at end of function then NULL will be returned.
+  $help = '';
+
+  // Only use help if it is is still being requested.
+  if (variable_get('cf_googledrive_help', FALSE)) {
+    if ($path == 'admin/config/convertfile/settings/handler/googledrive' && !variable_get('cf_googledrive_client_id')) {
+      $help .= '' .
+        '<div>First, you must create an app at google to authenticate your drive api access.</div>' .
+        '<ol>' .
+        '  <li>Create an API project in the <a href="https://code.google.com/apis/console/">Google APIs Console</a>.</li>' .
+        '  <li>Select the <b>Services</b> tab in your API project, and enable the Drive API.</li>' .
+        '  <li>Select the <b>API Access</b> tab in your API project, and click <b>Create an OAuth 2.0 client ID</b>.</li>' .
+        '  <li>In the <b>Branding Information</b> section, provide a name for your application (e.g. "Drive Quickstart Sample"), and click <b>Next</b>. Providing a product logo is optional.</li>' .
+        '  <li>In the <b>Client ID Settings</b> section, do the following:</li>' .
+        '  <ol>' .
+        '    <li>Select <b>Web application</b> for the <b>Application type</b>.</li>' .
+        '    <li>Click the <b>more options</b> link next to the heading, <b>Your site or hostname</b>.</li>' .
+        '    <li>List your hostname in the <b>Authorized Redirect URIs</b> and <b>JavaScript origins</b> fields.</li>' .
+        '    <li>Click <b>Create Client ID</b>.</li>' .
+        '  </ol>' .
+        '  <li>In the <b>API Access</b> page, locate the section <b>Client ID for Web applications</b> and note the <b>Client ID</b> value.</li>' .
+        '</ol>';
+    }
+  }
+
+  return (strlen($help)) ? $help : NULL;
+}
+
