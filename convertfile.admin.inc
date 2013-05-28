@@ -99,10 +99,10 @@ function convertfile_handler_form() {
       '#type' => 'markup',
       '#markup' => '<p>No file conversion handlers have been installed. You must ' .
         'install at least one handler to use this module. Convert File comes ' .
-        'with a default handler to compress uploaded text files.</p>',
+        'with a default handler.</p>',
     );
     $form['enable'] = array(
-      '#title' => 'Enable Compress',
+      '#title' => 'Enable Convert File default handler',
       '#type' => 'checkbox',
     );
   }
@@ -122,10 +122,10 @@ function convertfile_handler_form() {
 function convertfile_handler_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   if (isset($values['enable']) && $values['enable']) {
-    if (module_enable(array('cf_compress'), TRUE)) {
+    if (module_enable(array('cf_convertfile'), TRUE)) {
       menu_rebuild();
     } else {
-      drupal_set_message('Could not enable compress.', 'error');
+      drupal_set_message('Could not enable cf_convertfile.', 'error');
     }
   }
 
