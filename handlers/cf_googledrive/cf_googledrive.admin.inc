@@ -31,7 +31,7 @@ function cf_googledrive_form() {
       $authUrl = $client->createAuthUrl();
       $form['connect_google_drive'] = array(
         '#type' => 'markup',
-        '#markup' => "<a href='$authUrl'>Connect Me!</a>",
+        '#markup' => "<a href='$authUrl'>Connect to my Google Drive!</a>",
       );
     }
   }
