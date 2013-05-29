@@ -13,6 +13,7 @@
  *
  * @code
  * if ($service = cf_googledrive_service(cf_googledrive_client())) {
+ *   drupal_set_message('Connected!', 'status');
  *   if ($g_file = cf_googledrive_insert_file($service, $title, $description, NULL, $mime_type, $path_to_file)) {
  *     if ($data = cf_googledrive_download_file($service, $g_file, 'application/pdf')) {
  *       // $data is your blob, write it to the disk!
