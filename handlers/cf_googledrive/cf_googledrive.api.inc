@@ -4,9 +4,25 @@
  * @file
  * Simplify google drive SDK to convert files.
  *
- * @see https://developers.google.com/drive/auth/web-server
+ * You need to download the google drive sdk first and make sure its included.
+ * Then setup your api access with google.
+ *
+ * @code
+ * if ($service = cf_googledrive_service(cf_googledrive_client())) {
+ *   if ($g_file = cf_googledrive_insert_file($service, $title, $description, NULL, $mime_type, $path_to_file)) {
+ *     if ($data = cf_googledrive_download_file($service, $g_file, 'application/pdf')) {
+ *       // $data is your blob, write it to the disk!
+ *       if ($fp = fopen('newfile.pdf', 'wbx')) {
+ *         fwrite($fp, $data);
+ *       }
+ *     }
+ *   }
+ * }
+ * @endcode
+ *
  * @see https://code.google.com/p/google-api-php-client/
- * @see https://code.google.com/p/google-api-php-client/wiki/OAuth2 Not supported yet!
+ * @see https://developers.google.com/drive/auth/web-server
+ * @see https://www.google.com/apis/console
  */
 
 require_once '/projects/activelamp/convertfile/drupal-7.22/sites/all/libraries/google-api-php-client/src/Google_Client.php';
