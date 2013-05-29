@@ -1,5 +1,5 @@
-A Drupal widget to automatically convert the files or images submitted to it
-from one format to another before saving.
+A Drupal widget to automatically convert an uploaded file or image to
+pdf or other sundry formats before being saved by drupal.
 
 Two widgets will be installed, `Convert File` for file field types, and
 `Convert Image` for image field types.
