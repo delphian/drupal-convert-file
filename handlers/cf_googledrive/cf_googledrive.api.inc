@@ -127,3 +127,20 @@ function cf_googledrive_download_file($service, $file, $type) {
     return null;
   }
 }
+
+/**
+ * Permanently delete a file, skipping the trash.
+ *
+ * @param Google_DriveService $service Drive API service instance.
+ * @param String $fileId ID of the file to delete.
+ */
+function cf_googledrive_delete_file($service, $fileId) {
+  $success = FALSE;
+  try {
+    $service->files->delete($fileId);
+    $success = TRUE;
+  } catch (Exception $e) {
+    // Don't do anything.
+  }
+  return $success;
+}

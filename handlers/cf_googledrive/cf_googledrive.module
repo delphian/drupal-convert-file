@@ -90,6 +90,10 @@ function cf_googledrive_do_conversion($file, $instance) {
       else {
         $file->convertfile_error = 'Could not retrieve converted file.';
       }
+      // Remove the file from Google Drive.
+      if (!cf_googledrive_delete_file($service, $g_file->getId())) {
+        watchdog('convertfile', 'Can not remove from on google drive.', NULL, WATCHDOG_ERROR);
+      }
     }
     else {
       $file->convertfile_error = 'Could not upload file.';
