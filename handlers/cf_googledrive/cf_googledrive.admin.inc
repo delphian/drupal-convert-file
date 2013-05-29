@@ -13,24 +13,30 @@
  * Display configuration form.
  */
 function cf_googledrive_form() {
+  $client = NULL;
 
-  module_load_include('inc', 'cf_googledrive', 'cf_googledrive.api');
+  if (($library = libraries_load('google-api-php-client')) && !empty($library['loaded'])) {
+    module_load_include('inc', 'cf_googledrive', 'cf_googledrive.api');
 
-  // Set an initial access token.
-  if (isset($_GET['code'])) {
-    $client = new Google_Client();
-    $credentials = $client->authenticate();
-    variable_set('cf_googledrive_credentials', $credentials);
+    // Set an initial access token.
+    if (isset($_GET['code'])) {
+      $client = new Google_Client();
+      $credentials = $client->authenticate();
+      variable_set('cf_googledrive_credentials', $credentials);
+    }
+    $service = cf_googledrive_service(cf_googledrive_client());
+
+    if (!$service) {
+      $client = cf_googledrive_client();
+      $authUrl = $client->createAuthUrl();
+      $form['connect_google_drive'] = array(
+        '#type' => 'markup',
+        '#markup' => "<a href='$authUrl'>Connect Me!</a>",
+      );
+    }
   }
-  $service = cf_googledrive_service(cf_googledrive_client());
-
-  if (!$service) {
-    $client = cf_googledrive_client();
-    $authUrl = $client->createAuthUrl();
-    $form['connect_google_drive'] = array(
-      '#type' => 'markup',
-      '#markup' => "<a href='$authUrl'>Connect Me!</a>",
-    );
+  else {
+    drupal_set_message('Could not find the Google API PHP Client library. Please download https://code.google.com/p/google-api-php-client/ and install into libraries directory.', 'warning');
   }
 
   $form['markup'] = array(

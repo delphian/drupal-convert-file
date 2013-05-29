@@ -26,6 +26,28 @@ function cf_googledrive_menu() {
 }
 
 /**
+ * Implements hook_libraries_info().
+ */
+function cf_googledrive_libraries_info() {
+  // A very simple library. No changing APIs (hence, no versions), no variants.
+  // Expected to be extracted into 'sites/all/libraries/simple'.
+  $libraries['google-api-php-client'] = array(
+    'name' => 'Google API PHP Client',
+    'vendor url' => 'https://developers.google.com/drive/quickstart-php',
+    'download url' => 'https://code.google.com/p/google-api-php-client/',
+    'version' => 'none',
+    'files' => array(
+      'php' => array(
+        'src/Google_Client.php',
+        'src/contrib/Google_DriveService.php'
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
  * Implements hook_convertfile_info().
  *
  * Register our handler and formats with convertfile module.
@@ -67,40 +89,43 @@ function cf_googledrive_do_conversion($file, $instance) {
   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
   $message = NULL;
 
-  module_load_include('inc', 'cf_googledrive', 'cf_googledrive.api');
-
-  $service = cf_googledrive_service(cf_googledrive_client());
-  if ($service) {
-    $g_file = cf_googledrive_insert_file($service, $file->filename, 'temporary', NULL, $file->filemime, $file->uri);
-    if ($g_file) {
-      if ($data = cf_googledrive_download_file($service, $g_file, 'application/pdf')) {
-        $fp = fopen($file->uri, "wbx");
-        if (fwrite($fp, $data)) {
-          $ext_new = 'pdf';
-          $file->filename = $base . '.' . $ext . '.' . $ext_new;
-          $file->filesize = filesize($file->uri);
-          $file->filemime = file_get_mimetype($file->filename);
-          $file->destination = $file->destination . '.' . $ext_new;
-          $report = TRUE;
+  if (($library = libraries_load('google-api-php-client')) && !empty($library['loaded'])) {
+    module_load_include('inc', 'cf_googledrive', 'cf_googledrive.api');
+    $service = cf_googledrive_service(cf_googledrive_client());
+    if ($service) {
+      $g_file = cf_googledrive_insert_file($service, $file->filename, 'temporary', NULL, $file->filemime, $file->uri);
+      if ($g_file) {
+        if ($data = cf_googledrive_download_file($service, $g_file, 'application/pdf')) {
+          $fp = fopen($file->uri, "wbx");
+          if (fwrite($fp, $data)) {
+            $ext_new = 'pdf';
+            $file->filename = $base . '.' . $ext . '.' . $ext_new;
+            $file->filesize = filesize($file->uri);
+            $file->filemime = file_get_mimetype($file->filename);
+            $file->destination = $file->destination . '.' . $ext_new;
+            $report = TRUE;
+          }
+          else {
+            $file->convertfile_error = 'Could not write file to disk.';
+          }
         }
         else {
-          $file->convertfile_error = 'Could not write file to disk.';
+          $file->convertfile_error = 'Could not retrieve converted file.';
+        }
+        // Remove the file from Google Drive.
+        if (!cf_googledrive_delete_file($service, $g_file->getId())) {
+          watchdog('convertfile', 'Can not remove from on google drive.', NULL, WATCHDOG_ERROR);
         }
       }
       else {
-        $file->convertfile_error = 'Could not retrieve converted file.';
-      }
-      // Remove the file from Google Drive.
-      if (!cf_googledrive_delete_file($service, $g_file->getId())) {
-        watchdog('convertfile', 'Can not remove from on google drive.', NULL, WATCHDOG_ERROR);
+        $file->convertfile_error = 'Could not upload file.';
       }
     }
     else {
-      $file->convertfile_error = 'Could not upload file.';
+      $file->convertfile_error = 'Could not connect to service.';
     }
-  }
-  else {
-    $file->convertfile_error = 'Could not connect to service.';
+  } else {
+    $file->convertfile_error = 'Could not find Google API PHP Client library.';
   }
 
   return $report;

@@ -25,11 +25,6 @@
  * @see https://www.google.com/apis/console
  */
 
-require_once '/projects/activelamp/convertfile/drupal-7.22/sites/all/libraries/google-api-php-client/src/Google_Client.php';
-require_once '/projects/activelamp/convertfile/drupal-7.22/sites/all/libraries/google-api-php-client/src/contrib/Google_Oauth2Service.php';
-require_once '/projects/activelamp/convertfile/drupal-7.22/sites/all/libraries/google-api-php-client/src/contrib/Google_DriveService.php';
-
-
 /**
  * Load client.
  */
