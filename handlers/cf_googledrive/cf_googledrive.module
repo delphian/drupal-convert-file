@@ -144,26 +144,35 @@ function cf_googledrive_help($path, $arg) {
 
   // Only use help if it is is still being requested.
   if (variable_get('cf_googledrive_help', FALSE)) {
-    if ($path == 'admin/config/convertfile/settings/handler/googledrive' && !variable_get('cf_googledrive_client_id')) {
-      $help .= '' .
-        '<div>First, you must create an app at google to authenticate your drive api access.</div>' .
-        '<ol>' .
-        '  <li>Create an API project in the <a href="https://code.google.com/apis/console/">Google APIs Console</a>.</li>' .
-        '  <li>Select the <b>Services</b> tab in your API project, and enable the Drive API <u>and</u> Drive SDK.</li>' .
-        '  <li>Select the <b>API Access</b> tab in your API project, and click <b>Create an OAuth 2.0 client ID</b>.</li>' .
-        '  <li>In the <b>Branding Information</b> section, provide a name for your application (e.g. "Drive Quickstart Sample"), and click <b>Next</b>. Providing a product logo is optional.</li>' .
-        '  <li>In the <b>Client ID Settings</b> section, do the following:</li>' .
-        '  <ol>' .
-        '    <li>Select <b>Web application</b> for the <b>Application type</b>.</li>' .
-        '    <li>Click the <b>more options</b> link next to the heading, <b>Your site or hostname</b>.</li>' .
-        '    <li>List your hostname in the <b>Authorized Redirect URIs</b> and <b>JavaScript origins</b> fields.</li>' .
-        '    <li>Click <b>Create Client ID</b>.</li>' .
-        '  </ol>' .
-        '  <li>In the <b>API Access</b> page, locate the section <b>Client ID for Web applications</b> and note the <b>Client ID</b> value.</li>' .
-        '</ol><br>';
+    if ($path == 'admin/config/convertfile/settings/handler/googledrive') {
+      if (!variable_get('cf_googledrive_client_id')) {
+        $help .= '' .
+          '<div>First, you must create an app at google to authenticate your drive api access.</div>' .
+          '<ol>' .
+          '  <li>Create an API project in the <a href="https://code.google.com/apis/console/">Google APIs Console</a>.</li>' .
+          '  <li>Select the <b>Services</b> tab in your API project, and enable the Drive API <u>and</u> Drive SDK.</li>' .
+          '  <li>Select the <b>API Access</b> tab in your API project, and click <b>Create an OAuth 2.0 client ID</b>.</li>' .
+          '  <li>In the <b>Branding Information</b> section, provide a name for your application (e.g. "Drive Quickstart Sample"), and click <b>Next</b>. Providing a product logo is optional.</li>' .
+          '  <li>In the <b>Client ID Settings</b> section, do the following:</li>' .
+          '  <ol>' .
+          '    <li>Select <b>Web application</b> for the <b>Application type</b>.</li>' .
+          '    <li>Click the <b>more options</b> link next to the heading, <b>Your site or hostname</b>.</li>' .
+          '    <li>List your hostname in the <b>Authorized Redirect URIs</b> and <b>JavaScript origins</b> fields.</li>' .
+          '    <li>Click <b>Create Client ID</b>.</li>' .
+          '  </ol>' .
+          '  <li>In the <b>API Access</b> page, locate the section <b>Client ID for Web applications</b> and note the <b>Client ID</b> value.</li>' .
+          '</ol><br>';
+      }
+      if (variable_get('cf_googledrive_credentials', FALSE) && !cf_googledrive_service(cf_googledrive_client())) {
+        $help .= '<p>' . t('If you are having trouble with the connect please revoke the authorization and try again.') . '</p>' .
+          '<ul>' .
+          '  <li>Visit <a href="https://www.google.com/settings/security">https://www.google.com/settings/security</a>.</li>' .
+          '  <li>Click on <b>Manage Access</b> beneath the Connected applications and sites</b> heading.</li>' .
+          '  <li>Click on the <b>Revoke Access</b> button that follows <b>Drupal Convert File Google Drive Handler</b>.</li>' .
+          '</ul>';
+      }
     }
   }
 
   return (strlen($help)) ? $help : NULL;
 }
-
