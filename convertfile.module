@@ -286,39 +286,42 @@ function convertfile_validate_conversion($file, $instance) {
 
   $orig_file = clone $file;
   $info = convertfile_collect_info();
-  $name = $info[$settings['convertfile_provider']]['name'];
-  $function = isset($info[$settings['convertfile_provider']]['callback']) ?
-    $info[$settings['convertfile_provider']]['callback'] : NULL;
+  // If no provider is provided (I.E. None or isset == false), treat the file
+  // as a normal upload. Else, actually invoke rules.
+  if (isset($settings['convertfile_provider']) && $settings['convertfile_provider'] != "none") {
+    $name = $info[$settings['convertfile_provider']]['name'];
+    $function = isset($info[$settings['convertfile_provider']]['callback']) ?
+      $info[$settings['convertfile_provider']]['callback'] : NULL;
 
-  if ($function && function_exists($function)) {
-    // This is not intended for contributed code.
-    if (!$function($file, $instance)) {
-      $report[] = "File conversion by {$name} callback failed.";
+    if ($function && function_exists($function)) {
+      // This is not intended for contributed code.
+      if (!$function($file, $instance)) {
+        $report[] = "File conversion by {$name} callback failed.";
+      }
+    }
+    else {
+      // Everything _should be_ rules based.
+      rules_invoke_event('convertfile_request', $file, $instance);
+      if (isset($file->convertfile_error)) {
+        $report[] = "File conversion by {$name} rule failed.";
+      }
+    }
+
+    // Because the destination was messed with, make sure its still unique.
+    $file->destination = file_destination($file->destination, FILE_EXISTS_RENAME);
+
+    // Log successful file conversion.
+    if (empty($report)) {
+      watchdog('convertfile', "{$name} Saved: {$orig_file->filename} To: {$file->filename} " . 
+        "({$file->destination})", NULL, WATCHDOG_INFO);
+      rules_invoke_event('convertfile_success', $file, $instance);
+    }
+    // Log failed file conversion.
+    else {
+      watchdog('convertfile', "{$name} Failed to convert {$orig_file->filename}. {$file->convertfile_error}", NULL, WATCHDOG_ERROR);
+      rules_invoke_event('convertfile_failure', $file, $instance);
     }
   }
-  else {
-    // Everything _should be_ rules based.
-    rules_invoke_event('convertfile_request', $file, $instance);
-    if (isset($file->convertfile_error)) {
-      $report[] = "File conversion by {$name} rule failed.";
-    }
-  }
-
-  // Because the destination was messed with, make sure its still unique.
-  $file->destination = file_destination($file->destination, FILE_EXISTS_RENAME);
-
-  // Log successful file conversion.
-  if (empty($report)) {
-    watchdog('convertfile', "{$name} Saved: {$orig_file->filename} To: {$file->filename} " . 
-      "({$file->destination})", NULL, WATCHDOG_INFO);
-    rules_invoke_event('convertfile_success', $file, $instance);
-  }
-  // Log failed file conversion.
-  else {
-    watchdog('convertfile', "{$name} Failed to convert {$orig_file->filename}. {$file->convertfile_error}", NULL, WATCHDOG_ERROR);
-    rules_invoke_event('convertfile_failure', $file, $instance);
-  }
-
   return $report;
 }
 
