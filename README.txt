@@ -38,7 +38,7 @@ A dirty implemenation is possible by using the callback variable and filling
 it with the name of a function to do the conversion. This is not recommended,
 however as an example the entire rules functionality could be bypassed by
 calling the rules action function directly 
-`'callback' => 'cf_compress_rules_action_info'`
+`'callback' => 'cf_convertfile_rules_action_info'`
 
 ```php
 /**
@@ -85,4 +85,4 @@ function cf_convertfile_action_gzip($file, $instance) {
 
 Please do not contribute any handlers that use a function callback. Rules is
 the recommended method of doing conversions. Copy and modify the
-cf_compress handler as a template for a new handler.
+cf_convertfile handler as a template for a new handler.
