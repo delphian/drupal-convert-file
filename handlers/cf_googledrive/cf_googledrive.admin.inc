@@ -74,10 +74,12 @@ function cf_googledrive_form() {
     '#title' => 'Google Client Secret',
     '#default_value' => variable_get('cf_googledrive_client_secret', FALSE),
   );
+  $link = url($_GET['q'];, array('absolute' => TRUE));
   $form['google_client_redirect'] = array(
     '#type' => 'textfield',
     '#title' => 'Google Client Redirect',
     '#default_value' => variable_get('cf_googledrive_client_redirect', FALSE),
+    '#description' => 'Please set to: ' . $link,
   );
 
   $form['submit'] = array(
