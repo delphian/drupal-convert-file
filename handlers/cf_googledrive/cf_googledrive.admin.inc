@@ -14,6 +14,7 @@
  */
 function cf_googledrive_form() {
   $client = NULL;
+  $service = NULL;
 
   if (($library = libraries_load('google-api-php-client')) && !empty($library['loaded'])) {
     module_load_include('inc', 'cf_googledrive', 'cf_googledrive.api');
@@ -27,12 +28,13 @@ function cf_googledrive_form() {
     $service = cf_googledrive_service(cf_googledrive_client());
 
     if (!$service) {
-      $client = cf_googledrive_client();
-      $authUrl = $client->createAuthUrl();
-      $form['connect_google_drive'] = array(
-        '#type' => 'markup',
-        '#markup' => "<a href='$authUrl'>Connect to my Google Drive!</a>",
-      );
+      if ($client = cf_googledrive_client()) {
+        $authUrl = $client->createAuthUrl();
+        $form['connect_google_drive'] = array(
+          '#type' => 'markup',
+          '#markup' => "<p><a href='$authUrl'>Connect to my Google Drive!</a></p>",
+        );
+      }
     }
   }
   else {

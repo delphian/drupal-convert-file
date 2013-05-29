@@ -158,7 +158,7 @@ function cf_googledrive_help($path, $arg) {
         '    <li>Click <b>Create Client ID</b>.</li>' .
         '  </ol>' .
         '  <li>In the <b>API Access</b> page, locate the section <b>Client ID for Web applications</b> and note the <b>Client ID</b> value.</li>' .
-        '</ol>';
+        '</ol><br>';
     }
   }
 

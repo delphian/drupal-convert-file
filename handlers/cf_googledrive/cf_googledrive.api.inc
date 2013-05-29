@@ -45,18 +45,27 @@
 
 /**
  * Load client.
+ *
+ * @return Google_Client|bool
+ *   A client ready to be authenticated, or NULL on error. Erorr is probably
+ *   due to the client id not being configured.
  */
 function cf_googledrive_client() {
-  $client = new Google_Client();
-  $client->setApplicationName('Drupal Convert File Google Drive Handler');
-  $client->setClientId(variable_get('cf_googledrive_client_id', NULL));
-  $client->setClientSecret(variable_get('cf_googledrive_client_secret', NULL));
-  $client->setRedirectUri(variable_get('cf_googledrive_client_redirect', NULL));
-  $client->setScopes(array(
-    'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/userinfo.email',
-    'https://www.googleapis.com/auth/userinfo.profile',
-  ));
+  $client = NULL;
+
+  if (variable_get('cf_googledrive_client_id', FALSE)) {
+    $client = new Google_Client();
+    $client->setApplicationName('Drupal Convert File Google Drive Handler');
+    $client->setClientId(variable_get('cf_googledrive_client_id', NULL));
+    $client->setClientSecret(variable_get('cf_googledrive_client_secret', NULL));
+    $client->setRedirectUri(variable_get('cf_googledrive_client_redirect', NULL));
+    $client->setScopes(array(
+      'https://www.googleapis.com/auth/drive.file',
+      'https://www.googleapis.com/auth/userinfo.email',
+      'https://www.googleapis.com/auth/userinfo.profile',
+    ));
+  }
+
   return $client;
 }
 
