@@ -36,6 +36,7 @@ function cf_convertfile_rules_action_info() {
  *   Sets new property of convertfile_error to TRUE on the $file object if an
  *   error was encountered, otherwise properties absense means success.
  *
+ * @todo use standardized error reporting.
  * @see cf_convertfile_rules_action_info()
  */
 function cf_convertfile_action_gzip($file, $instance) {

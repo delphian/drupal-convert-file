@@ -20,14 +20,14 @@ gzip conversions.
  *
  * Register our handler and formats with convertfile module.
  */
-function cf_compress_convertfile_info() {
-  $types = array();
-  $types['cf_compress_gz'] = '.gz (application/x-gzip)';
+function cf_convertfile_convertfile_info() {
+  $types = array(
+    'cf_convertfile_gz' => '.gz (application/x-gzip)',
+  );
 
   return array(
-    'compress' => array(
-      'name' => 'Compress',
-      'callback' => NULL,
+    'cf_convertfile' => array(
+      'name' => 'Convert File',
       'types' => $types,
     ),
   );
@@ -44,26 +44,43 @@ calling the rules action function directly
 /**
  * Rules action to gzip a file.
  *
- * @see cf_compress_rules_action_info()
+ * @param stdClass $file
+ *   File object that is being readied to be moved from temporary server
+ *   upload bin.
+ * @param array $instance
+ *   Field instance that this file was submitted to.
+ *
+ * @return
+ *   Sets new property of convertfile_error to TRUE on the $file object if an
+ *   error was encountered, otherwise properties absense means success.
+ *
+ * @see cf_convertfile_rules_action_info()
  */
-function cf_compress_action_gzip($file, $instance) {
+function cf_convertfile_action_gzip($file, $instance) {
+  $success = FALSE;
   $settings = $instance['widget']['settings'];
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
   $base = pathinfo($file->filename, PATHINFO_FILENAME);
   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
 
-  $contents = file_get_contents($file->uri);
-  $fp = gzopen($file->uri, 'w9');
-  gzwrite($fp, $contents);
-  gzclose($fp);
+  if (($contents = file_get_contents($file->uri)) !== FALSE) {
+    if ($fp = gzopen($file->uri, 'w9')) {
+      if (gzwrite($fp, $contents)) {
+        $ext_new = 'gz';
+        $file->filename = $base . '.' . $ext . '.' . $ext_new;
+        $file->filesize = filesize($file->uri);
+        $file->filemime = file_get_mimetype($file->filename);
+        $file->destination = $file->destination . '.' . $ext_new;
+        $success = TRUE;
+      }
+      gzclose($fp);
+    }
+  }
 
-  $ext_new = 'gz';
-  $file->filename = $base . '.' . $ext . '.' . $ext_new;
-  $file->filesize = filesize($file->uri);
-  $file->filemime = file_get_mimetype($file->filename);
-  $file->destination = $file->destination . '.' . $ext_new;
+  if (!$success) {
+    $file->convertfile_error = TRUE;
+  }
 }
-
 ```
 
 Please do not contribute any handlers that use a function callback. Rules is
