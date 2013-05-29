@@ -69,22 +69,34 @@ function cf_googledrive_do_conversion($file, $instance) {
 
   module_load_include('inc', 'cf_googledrive', 'cf_googledrive.api');
 
-  if ($type && ($blob = cf_googledrive_api_call($file->uri, $message))) {
-    $fp = fopen($file->uri, "wbx");
-    if (fwrite($fp, $blob)) {
-      $ext_new = 'pdf';
-      $file->filename = $base . '.' . $ext . '.' . $ext_new;
-      $file->filesize = filesize($file->uri);
-      $file->filemime = file_get_mimetype($file->filename);
-      $file->destination = $file->destination . '.' . $ext_new;
-      $report = TRUE;
+  $service = cf_googledrive_service(cf_googledrive_client());
+  if ($service) {
+    $g_file = cf_googledrive_insert_file($service, $file->filename, 'temporary', NULL, $file->filemime, $file->uri);
+    if ($g_file) {
+      if ($data = cf_googledrive_download_file($service, $g_file, 'application/pdf')) {
+        $fp = fopen($file->uri, "wbx");
+        if (fwrite($fp, $data)) {
+          $ext_new = 'pdf';
+          $file->filename = $base . '.' . $ext . '.' . $ext_new;
+          $file->filesize = filesize($file->uri);
+          $file->filemime = file_get_mimetype($file->filename);
+          $file->destination = $file->destination . '.' . $ext_new;
+          $report = TRUE;
+        }
+        else {
+          $file->convertfile_error = 'Could not write file to disk.';
+        }
+      }
+      else {
+        $file->convertfile_error = 'Could not retrieve converted file.';
+      }
     }
     else {
-      $file->convertfile_error = 'ConvertAPI could not write file to disk.';
+      $file->convertfile_error = 'Could not upload file.';
     }
   }
   else {
-    $file->convertfile_error = "ConvertAPI could not convert file: {$message}.";
+    $file->convertfile_error = 'Could not connect to service.';
   }
 
   return $report;

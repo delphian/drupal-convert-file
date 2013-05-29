@@ -11,6 +11,8 @@
 
 require_once '/projects/activelamp/convertfile/drupal-7.22/sites/all/libraries/google-api-php-client/src/Google_Client.php';
 require_once '/projects/activelamp/convertfile/drupal-7.22/sites/all/libraries/google-api-php-client/src/contrib/Google_Oauth2Service.php';
+require_once '/projects/activelamp/convertfile/drupal-7.22/sites/all/libraries/google-api-php-client/src/contrib/Google_DriveService.php';
+
 
 /**
  * Load client.
@@ -47,6 +49,7 @@ function cf_googledrive_service($client) {
   $credentials = variable_get('cf_googledrive_credentials', FALSE);
   if ($client && $credentials) {
     $client->setAccessToken($credentials);
+    $client->setUseObjects(true);
     $app = new Google_DriveService($client);
     try {
       $app->files->listFiles();
@@ -97,5 +100,30 @@ function cf_googledrive_insert_file($service, $title, $description, $parentId, $
     return $createdFile;
   } catch (Exception $e) {
     print "An error occurred: " . $e->getMessage();
+  }
+}
+
+/**
+ * Download a file's content.
+ *
+ * @param Google_DriveService $service Drive API service instance.
+ * @param File $file Drive File instance.
+ * @return String The file's content if successful, null otherwise.
+ */
+function cf_googledrive_download_file($service, $file, $type) {
+  $download_links = $file->getExportLinks();
+  $downloadUrl = $download_links[$type];
+  if ($downloadUrl) {
+    $request = new Google_HttpRequest($downloadUrl, 'GET', null, null);
+    $httpRequest = Google_Client::$io->authenticatedRequest($request);
+    if ($httpRequest->getResponseHttpCode() == 200) {
+      return $httpRequest->getResponseBody();
+    } else {
+      // An error occurred.
+      return null;
+    }
+  } else {
+    // The file doesn't have any content stored on Drive.
+    return null;
   }
 }

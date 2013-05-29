@@ -95,21 +95,5 @@ function cf_googledrive_form_submit($form_id, &$form_state) {
   variable_set('cf_googledrive_client_secret', $values['google_client_secret']);
   variable_set('cf_googledrive_client_redirect', $values['google_client_redirect']);
 
-  $service = cf_googledrive_service(cf_googledrive_client());
-  if ($service) {
-    $title = 'testingthisout';
-    $description = 'just a test file description here.';
-    $parentId = NULL;
-    $mimeType = 'text/plain';
-    $filename = '/Users/bryanhazelbaker/Downloads/test.txt';
-    if (cf_googledrive_insert_file($service, $title, $description, $parentId, $mimeType, $filename)) {
-      drupal_set_message('Test file OK!');
-    }
-    drupal_set_message('Google drive is connected', 'status');
-  }
-  else {
-    drupal_set_message('Google Drive is not connected', 'warning');
-  }
-
   drupal_set_message(t('Settings have been updated.'));
 }
