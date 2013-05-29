@@ -8,7 +8,8 @@
  * Then setup your api access with google (create a google application). After
  * that you will need to grant access to your personal Google Drive space to
  * your new google application. To create the url to do this use 
- * $client->createAuthUrl(), and follow that link.
+ * $client->createAuthUrl(), and follow that link. (google must have access
+ * to redirect you back to your php application)
  *
  * @code
  * if ($service = cf_googledrive_service(cf_googledrive_client())) {
@@ -19,6 +20,19 @@
  *         fwrite($fp, $data);
  *       }
  *     }
+ *   }
+ * }
+ * else {
+ *   // Set an initial access token.
+ *   if (isset($_GET['code'])) {
+ *     $client = new Google_Client();
+ *     $credentials = $client->authenticate();
+ *     variable_set('cf_googledrive_credentials', $credentials);
+ *   }
+ *   else {
+ *     $client = cf_googledrive_client();
+ *     $authUrl = $client->createAuthUrl();
+ *     drupal_set_message("<a href='$authUrl'>Connect to my Google Drive!</a>", 'status');
  *   }
  * }
  * @endcode
