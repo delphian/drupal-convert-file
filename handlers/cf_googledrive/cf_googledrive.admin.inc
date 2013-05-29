@@ -7,10 +7,6 @@
  * Form constructor for config settings and submit handler.
  */
 
-// @todo move to library_load
-require_once '/projects/activelamp/convertfile/drupal-7.22/sites/all/libraries/google-api-php-client/src/Google_Client.php';
-require_once '/projects/activelamp/convertfile/drupal-7.22/sites/all/libraries/google-api-php-client/src/contrib/Google_DriveService.php';
-
 /**
  * Menu callback.
  *
