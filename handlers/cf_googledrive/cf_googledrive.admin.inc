@@ -21,9 +21,12 @@ function cf_googledrive_form() {
 
     // Set an initial access token.
     if (isset($_GET['code'])) {
-      $client = new Google_Client();
-      $credentials = $client->authenticate();
-      variable_set('cf_googledrive_credentials', $credentials);
+      if ($client = cf_googledrive_client()) {
+        $credentials = $client->authenticate();
+        variable_set('cf_googledrive_credentials', $credentials);
+        // Redirect to get rid of the code.
+        drupal_goto(url($_GET['q'], array('absolute' => TRUE)));
+      }
     }
     $service = cf_googledrive_service(cf_googledrive_client());
 

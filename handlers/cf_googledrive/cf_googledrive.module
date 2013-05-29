@@ -36,10 +36,12 @@ function cf_googledrive_libraries_info() {
     'vendor url' => 'https://developers.google.com/drive/quickstart-php',
     'download url' => 'https://code.google.com/p/google-api-php-client/',
     'version' => 'none',
+    'path' => 'src',
     'files' => array(
       'php' => array(
-        'src/Google_Client.php',
-        'src/contrib/Google_DriveService.php'
+        'Google_Client.php',
+        'contrib/Google_DriveService.php',
+        'contrib/Google_Oauth2Service.php',
       ),
     ),
   );
