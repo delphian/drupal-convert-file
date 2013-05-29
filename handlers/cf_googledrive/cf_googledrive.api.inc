@@ -5,7 +5,10 @@
  * Simplify google drive SDK to convert files.
  *
  * You need to download the google drive sdk first and make sure its included.
- * Then setup your api access with google.
+ * Then setup your api access with google (create a google application). After
+ * that you will need to grant access to your personal Google Drive space to
+ * your new google application. To create the url to do this use 
+ * $client->createAuthUrl(), and follow that link.
  *
  * @code
  * if ($service = cf_googledrive_service(cf_googledrive_client())) {
