@@ -62,7 +62,6 @@ function cf_googledrive_convertfile_info() {
   return array(
     'cf_googledrive' => array(
       'name' => 'Google Drive',
-      'callback' => 'cf_googledrive_do_conversion',
       'types' => $types,
     ),
   );
