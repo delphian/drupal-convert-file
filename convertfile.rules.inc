@@ -83,7 +83,12 @@ function convertfile_rules_condition_info() {
  */
 function convertfile_condition_file_extension($file, $extension) {
   $report = FALSE;
-  $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
+  if (isset($file->convertfile_original->filename)) {
+    $ext = pathinfo($file->convertfile_original->filename, PATHINFO_EXTENSION);
+  }
+  else {
+    $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
+  }
   if ($ext == $extension) {
     $report = TRUE;
   }
@@ -105,7 +110,7 @@ function convertfile_condition_provider($instance, $provider) {
 }
 
 /**
- * Condition convertfile_condition_provider
+ * Condition convertfile_condition_format
  */
 function convertfile_condition_format($instance, $format) {
   $report = FALSE;
