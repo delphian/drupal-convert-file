@@ -190,6 +190,13 @@ function convertfile_field_widget_settings_form($field, $instance) {
     }
   }
 
+  // O(n^2)
+  foreach($results as $key => $provider) {
+    foreach($provider['types'] as $key => $type) {
+      $format_options[$key] = $type;
+    }
+  }
+
   // Add our common custom settings
   $form['convertfile_provider'] = array(
     '#title' => t('Convert using provider'),
@@ -198,12 +205,6 @@ function convertfile_field_widget_settings_form($field, $instance) {
     '#default_value' => isset($settings['convertfile_provider']) ? $settings['convertfile_provider'] : 'none',
     '#description' => t('The provider used to convert this file.'),
     '#weight' => 20,
-    '#ajax' => array(
-      'callback' => 'convertfile_ajax_show_formats',
-      'wrapper' => 'convertfile-format-wrapper',
-      'method' => 'replace',
-      'effect' => 'fade',
-    ),
   );
 
   $form['convertfile_format'] = array(
@@ -216,30 +217,10 @@ function convertfile_field_widget_settings_form($field, $instance) {
     '#suffix' => '</div>',
     '#weight' => 22,
   );
-
+  $convertfile_collected_info = json_encode(convertfile_collect_info());
+  drupal_add_js(drupal_get_path('module', 'convertfile') . '/js/convert.admin.js');
+  drupal_add_js("var convertfile = $convertfile_collected_info", array('type' => 'inline'));
   return $form;
-}
-
-function convertfile_ajax_show_formats($form, $form_state) {
-  // Compile list of specific provider's formats.
-  $format_options = array('none' => '- None -');
-  if ($results = convertfile_collect_info()) {
-    $handler = $form_state['values']['instance']['widget']['settings']['convertfile_provider'];
-    if (isset($results[$handler])) {
-      foreach($results[$handler]['types'] as $key => $value) {
-        $format_options[$key] = $value;
-      }
-    }
-  }
-
-  return array(
-    '#title' => t('Convert to format'),
-    '#type' => 'select',
-    '#description' => 'The file format that will be converted to',
-    '#options' => $format_options,
-    '#prefix' => "<div id='convertfile-format-wrapper'>",
-    '#suffix' => '</div>',
-  );
 }
 
 /**
