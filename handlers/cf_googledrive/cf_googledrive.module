@@ -82,7 +82,7 @@ function cf_googledrive_help($path, $arg) {
       if (!variable_get('cf_googledrive_client_id')) {
         $link = url($_GET['q'], array('absolute' => TRUE));
         $help .= '' .
-          '<div>First, you must create an app at google to authenticate your drive api access.</div>' .
+          '<p>This module must use a google application to access the Google Drive service. Google will then check which individual users have granted the google application access to their Google Drive. The application must first be created at google. After creation, submit the app identification and secret key below so that drupal can authenticate itself as operating on behalf of this new application. Then you will be able to connect (authorize) an individual Google Drive account to this application.</p>' .
           '<ol>' .
           '  <li>Create an API project in the <a href="https://code.google.com/apis/console/">Google APIs Console</a>.</li>' .
           '  <li>Select the <b>Services</b> tab in your API project, and enable the Drive API <u>and</u> Drive SDK.</li>' .
