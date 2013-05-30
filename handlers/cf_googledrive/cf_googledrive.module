@@ -98,7 +98,7 @@ function cf_googledrive_help($path, $arg) {
           '</ol><br>';
       }
       if (variable_get('cf_googledrive_credentials', FALSE) && !cf_googledrive_service(cf_googledrive_client())) {
-        $help .= '<p>' . t('If you are having trouble with the connect please revoke the authorization and try again.') . '</p>' .
+        $help .= '<p>' . t('Application authorization may have been revoked. If you are having trouble with the connection please revoke the authorization if it still exists and try to connect again.') . '</p>' .
           '<ul>' .
           '  <li>Visit <a href="https://www.google.com/settings/security">https://www.google.com/settings/security</a>.</li>' .
           '  <li>Click on <b>Manage Access</b> beneath the Connected applications and sites</b> heading.</li>' .

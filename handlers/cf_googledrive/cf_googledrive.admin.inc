@@ -18,7 +18,6 @@ function cf_googledrive_form() {
 
   if (($library = libraries_load('google-api-php-client')) && !empty($library['loaded'])) {
     module_load_include('inc', 'cf_googledrive', 'cf_googledrive.api');
-
     // Set an initial access token.
     if (isset($_GET['code'])) {
       if ($client = cf_googledrive_client()) {
@@ -29,16 +28,6 @@ function cf_googledrive_form() {
       }
     }
     $service = cf_googledrive_service(cf_googledrive_client());
-
-    if (!$service) {
-      if ($client = cf_googledrive_client()) {
-        $authUrl = $client->createAuthUrl();
-        $form['connect_google_drive'] = array(
-          '#type' => 'markup',
-          '#markup' => "<p><a href='$authUrl'>Connect to my Google Drive!</a></p>",
-        );
-      }
-    }
   }
   else {
     drupal_set_message('Could not find the Google API PHP Client library. Please download https://code.google.com/p/google-api-php-client/ and install into libraries directory.', 'warning');
@@ -48,6 +37,28 @@ function cf_googledrive_form() {
     '#type' => 'markup',
     '#markup' => ($service) ? '<h3>Google Drive (<span style="color:#00dd00">Connected</span>)</h3>' : '<h3>Google Drive (<span style="color:#dd0000;">Disconnected</span>)</h3>',
   );
+  if ($service) {
+    // Disconnect the google drive from drupal.
+    $form['disconnect'] = array(
+      '#type' => 'button',
+      '#button_type' => 'submit',
+      '#executes_submit_callback' => TRUE,
+      '#value' => 'Disconnect Google Drive',
+    );
+  }
+  else {
+    // Connect google drive to application.
+    if (!empty($library['loaded']) && ($client = cf_googledrive_client())) {
+      $authUrl = $client->createAuthUrl();
+      $form['connect_google_drive'] = array(
+        '#type' => 'button',
+        '#button_type' => 'submit',
+        '#executes_submit_callback' => TRUE,
+        '#value' => 'Connect Google Drive',
+        '#markup' => "<p><a href='$authUrl'>Connect to my Google Drive!</a></p>",
+      );
+    }
+  }
 
   $markup = '<p>This handler will convert to the following formats:</p>';
   // Create list of formats.
@@ -99,10 +110,22 @@ function cf_googledrive_form() {
  */
 function cf_googledrive_form_submit($form_id, &$form_state) {
   $values = $form_state['values'];
-  variable_set('cf_googledrive_help', $values['enable_help']);
-  variable_set('cf_googledrive_client_id', $values['google_client_id']);
-  variable_set('cf_googledrive_client_secret', $values['google_client_secret']);
-  variable_set('cf_googledrive_client_redirect', $values['google_client_redirect']);
-
-  drupal_set_message(t('Settings have been updated.'));
+  // Disconnect the google drive.
+  if ($values['op'] == 'Disconnect Google Drive') {
+    variable_set('cf_googledrive_credentials', NULL);
+    drupal_set_message(t('Google Drive has been disconnected from drupal. Dont forget to revoke access of the application to your drive: <a href="https://support.google.com/accounts/answer/41236">https://support.google.com/accounts/answer/41236</a>'));
+  }
+  // Redirect to google drive authentication.
+  else if ($values['op'] == 'Connect Google Drive') {
+    if ($client = cf_googledrive_client()) {
+      drupal_goto($client->createAuthUrl(), array('external' => TRUE));
+    }
+  }
+  else {
+    variable_set('cf_googledrive_help', $values['enable_help']);
+    variable_set('cf_googledrive_client_id', $values['google_client_id']);
+    variable_set('cf_googledrive_client_secret', $values['google_client_secret']);
+    variable_set('cf_googledrive_client_redirect', $values['google_client_redirect']);
+    drupal_set_message(t('Settings have been updated.'));
+  }
 }
