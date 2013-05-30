@@ -371,6 +371,10 @@ function convertfile_help($path, $arg) {
     if (empty($images) && empty($files)) {
       $help .= '<p>' . t('Edit a <a href="@convertfile">content type</a> and set a file or image field to use the new <u>Convert File</u> or <u>Convert Image</u> widgets. Include the converted format file extension in the accepted formats field.', array('@convertfile' => url('admin/structure/types'))) . '</p>';
     }
+    // Help text if rules_admin is not turned on.
+    if (!module_exists('rules_admin')) {
+      $help .= '<p><a href="/admin/modules">Rules UI</a> (rules_admin) ' . t('module must be enabled to edit or examine the details of rules.') . '</p>';
+    }
   }
 
   // Main module help for the convertfile module
