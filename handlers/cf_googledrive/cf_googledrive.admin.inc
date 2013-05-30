@@ -94,8 +94,8 @@ function cf_googledrive_form() {
   $form['google_client_redirect'] = array(
     '#type' => 'textfield',
     '#title' => 'Google Client Redirect',
-    '#default_value' => variable_get('cf_googledrive_client_redirect', FALSE),
-    '#description' => 'Please set to: ' . $link,
+    '#default_value' => variable_get('cf_googledrive_client_redirect', $link),
+    '#description' => 'Recommended value: ' . $link,
   );
 
   $form['submit'] = array(
