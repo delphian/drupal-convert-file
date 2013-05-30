@@ -13,7 +13,7 @@ function convertfile_default_rules_configuration() {
   $configs = array();
 
   // Convert files to PDF success message.
-  $rule = '{ "rules_cf_convert_to_pdf_success_message" : {
+  $rule = '{ "convertfile_convert_to_pdf_success_message" : {
     "LABEL" : "CF convert to PDF success message",
     "PLUGIN" : "reaction rule",
     "TAGS" : [ "convertfile", "pdf", "success" ],
@@ -33,7 +33,7 @@ function convertfile_default_rules_configuration() {
   }
 }';
 
-  $configs['rules_cf_convert_to_pdf_success_message'] = rules_import($rule);
+  $configs['convertfile_convert_to_pdf_success_message'] = rules_import($rule);
 
   return $configs;
 }
