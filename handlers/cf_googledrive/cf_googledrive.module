@@ -56,7 +56,7 @@ function cf_googledrive_libraries_info() {
  */
 function cf_googledrive_convertfile_info() {
   $types = array(
-    'cf_googledrive_pdf' => '.pdf (application/pdf)',
+    'pdf' => '.pdf (application/pdf)',
   );
 
   return array(

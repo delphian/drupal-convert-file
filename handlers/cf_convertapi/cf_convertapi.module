@@ -35,7 +35,7 @@ function cf_convertapi_menu() {
  */
 function cf_convertapi_convertfile_info() {
   $types = array(
-    'cf_convertapi_pdf' => '.pdf (application/pdf)',
+    'pdf' => '.pdf (application/pdf)',
   );
 
   return array(

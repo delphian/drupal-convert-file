@@ -32,7 +32,7 @@ function cf_convertfile_menu() {
  */
 function cf_convertfile_convertfile_info() {
   $types = array(
-    'cf_convertfile_gz' => '.gz (application/x-gzip)',
+    'gz' => '.gz (application/x-gzip)',
   );
 
   return array(
