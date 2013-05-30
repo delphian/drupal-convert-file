@@ -79,6 +79,8 @@ function cf_googledrive_help($path, $arg) {
   // Only use help if it is is still being requested.
   if (variable_get('cf_googledrive_help', FALSE)) {
     if ($path == 'admin/config/convertfile/settings/handler/googledrive') {
+
+      // Helper text to create google application.
       if (!variable_get('cf_googledrive_client_id')) {
         $link = url($_GET['q'], array('absolute' => TRUE));
         $help .= '' .
@@ -98,6 +100,8 @@ function cf_googledrive_help($path, $arg) {
           '  <li>In the <b>API Access</b> page, locate the section <b>Client ID for Web applications</b> and note the <b>Client ID</b> value.</li>' .
           '</ol><br>';
       }
+
+      // Helper text when credentails are present but its not working for some reason.
       if (variable_get('cf_googledrive_credentials', FALSE) && !cf_googledrive_service(cf_googledrive_client())) {
         $help .= '<p>' . t('Application authorization may have been revoked. If you are having trouble with the connection please revoke the authorization if it still exists and try to connect again.') . '</p>' .
           '<ul>' .
