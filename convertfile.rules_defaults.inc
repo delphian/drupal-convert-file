@@ -9,7 +9,7 @@
  * Implements hook_default_rules_configuration().
  */
 
-function cf_googledrive_default_rules_configuration() {
+function convertfile_default_rules_configuration() {
   $configs = array();
 
   // Convert files to PDF success message.
@@ -31,9 +31,9 @@ function cf_googledrive_default_rules_configuration() {
       { "drupal_message" : { "message" : "Your file has been automatically converted to the PDF format." } }
     ]
   }
-}'
+}';
 
-  $configs['cf_googledrive_pdf'] = rules_import($rule);
+  $configs['rules_cf_convert_to_pdf_success_message'] = rules_import($rule);
 
   return $configs;
 }
