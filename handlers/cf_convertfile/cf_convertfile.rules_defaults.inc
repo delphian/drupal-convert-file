@@ -5,9 +5,9 @@ function cf_convertfile_default_rules_configuration() {
 
   // Automkatically gzip all text files uploaded to 'convert_file' widgets.
   $rule = '{ "cf_convertfile_gzip" : {
-    "LABEL" : "Compress files upload with gzip",
+    "LABEL" : "CF Convert File convert to GZ",
     "PLUGIN" : "reaction rule",
-    "TAGS" : [ "gzip", "convertfile" ],
+    "TAGS" : [ "gzip", "convertfile", "gz" ],
     "REQUIRES" : [ "convertfile", "cf_convertfile", "rules" ],
     "ON" : [ "convertfile_request" ],
     "IF" : [
