@@ -6,7 +6,7 @@
 function cf_convertfile_rules_action_info() {
   return array(
     'cf_convertfile_gzip' => array(
-      'label' => t('Convert file to .gz (application/x-gzip)'),
+      'label' => t('Convert file to .gz (application/x-gzip) using Convert File'),
       'parameter' => array(
         'file' => array(
           'type' => 'file',

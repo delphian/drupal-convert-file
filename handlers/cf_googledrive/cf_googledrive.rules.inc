@@ -11,7 +11,7 @@
 function cf_googledrive_rules_action_info() {
   return array(
     'cf_googledrive_pdf' => array(
-      'label' => t('Convert file to .pdf (application/pdf)'),
+      'label' => t('Convert file to .pdf (application/pdf) using Google Drive'),
       'parameter' => array(
         'file' => array(
           'type' => 'file',

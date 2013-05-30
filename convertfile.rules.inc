@@ -41,7 +41,7 @@ function convertfile_rules_event_info() {
 function convertfile_rules_condition_info() {
   return array(
     'convertfile_condition_file_extension' => array(
-      'label' => t('Original Format'),
+      'label' => t('Original format'),
       'group' => 'Convert File',
       'parameter' => array(
         'file' => array('type' => 'file', 'label' => t('The file object')),
