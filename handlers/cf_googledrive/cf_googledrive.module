@@ -80,6 +80,7 @@ function cf_googledrive_help($path, $arg) {
   if (variable_get('cf_googledrive_help', FALSE)) {
     if ($path == 'admin/config/convertfile/settings/handler/googledrive') {
       if (!variable_get('cf_googledrive_client_id')) {
+        $link = url($_GET['q'], array('absolute' => TRUE));
         $help .= '' .
           '<div>First, you must create an app at google to authenticate your drive api access.</div>' .
           '<ol>' .
@@ -91,7 +92,7 @@ function cf_googledrive_help($path, $arg) {
           '  <ol>' .
           '    <li>Select <b>Web application</b> for the <b>Application type</b>.</li>' .
           '    <li>Click the <b>more options</b> link next to the heading, <b>Your site or hostname</b>.</li>' .
-          '    <li>List your hostname in the <b>Authorized Redirect URIs</b> and <b>JavaScript origins</b> fields.</li>' .
+          '    <li>Enter ' . $link . ' in the <b>Authorized Redirect URIs</b> field. This must be a valid top level domain. Leave the javascript field empty.</li>' .
           '    <li>Click <b>Create Client ID</b>.</li>' .
           '  </ol>' .
           '  <li>In the <b>API Access</b> page, locate the section <b>Client ID for Web applications</b> and note the <b>Client ID</b> value.</li>' .
