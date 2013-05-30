@@ -13,12 +13,12 @@ function cf_convertfile_default_rules_configuration() {
     "IF" : [
       { "convertfile_condition_provider" : {
           "instance" : [ "instance" ],
-          "provider" : { "value" : { "compress" : "compress" } }
+          "provider" : { "value" : { "cf_convertfile" : "cf_convertfile" } }
         }
       },
       { "convertfile_condition_format" : {
           "instance" : [ "instance" ],
-          "format" : { "value" : { "cf_convertfile_gz" : "cf_convertfile_gz" } }
+          "format" : { "value" : { "gz" : "gz" } }
         }
       }
     ],
