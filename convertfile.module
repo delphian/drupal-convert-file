@@ -174,8 +174,8 @@ function convertfile_managed_file_value(&$element, $input = FALSE, $form_state =
   $instance = array(
     'widget' => array(
       'settings' => array(
-        'convertfile_provider' => 'cf_googledrive',
-        'convertfile_format' => 'pdf',
+        'convertfile_provider' => $element['#convertfile_provider'],
+        'convertfile_format' => $element['#convertfile_format'],
       ),
     ),
   );
@@ -319,7 +319,7 @@ function convertfile_validate_conversion($file, $instance) {
   $info = convertfile_collect_info();
   // If no provider is provided (I.E. None or isset == false), treat the file
   // as a normal upload. Else, actually invoke rules.
-  if (isset($settings['convertfile_provider']) && $settings['convertfile_provider'] != "none") {
+  if (isset($info[$settings['convertfile_provider']]['name'])) {
     $name = $info[$settings['convertfile_provider']]['name'];
     $function = isset($info[$settings['convertfile_provider']]['callback']) ?
       $info[$settings['convertfile_provider']]['callback'] : NULL;
@@ -353,6 +353,12 @@ function convertfile_validate_conversion($file, $instance) {
       rules_invoke_event('convertfile_failure', $file, $instance);
     }
   }
+  else {
+    if ($settings['convertfile_provider'] != "none") {
+      $report[] = "Unknown conversion provider: {$settings['convertfile_provider']}.";
+    }
+  }
+
   return $report;
 }
 

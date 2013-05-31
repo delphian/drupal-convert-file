@@ -16,10 +16,12 @@
  */
 function convertfile_config_form() {
 
-  $form['test'] = array(
+  $form['test_conversion'] = array(
     '#type' => 'convertfile_file',
-    '#title' => 'Test Upload',
-    '#stuff' => '#stuff',
+    '#title' => 'Test file conversion',
+    '#convertfile_provider' => 'cf_googledrive',
+    '#convertfile_format' => 'pdf',
+    '#description' => 'Test out the File API element type convertfile_file',
   );
 
   $form['installed_on'] = array(
