@@ -21,10 +21,31 @@ Convert File will gzip an uploaded file, while Google Drive will convert the
 file into pdf format. These providers are not active by default and must be
 enabled via the modules page.
 
-### Installation instructions ###
+### Installation instructions with drush ###
 
-Clone the repository into the sites/all/modules/custom directory.
+Clone the repository into the sites/all/modules/custom directory:
 `git clone --recursive git://github.com/delphian/drupal-convert-file.git`
+
+Download the Google PHP SDK library 
+(https://code.google.com/p/google-api-php-client/) into sites/all/libraries
+directory:
+`curl "http://google-api-php-client.googlecode.com/files/google-api-php-client-0.6.2.tar.gz" -O`
+`tar -xvf  google-api-php-client-0.6.2.tar.gz`
+
+Enable modules:
+`drush en convertfile cf_googledrive cf_convertfile -y`
+
+Create a new file field on a piece of content and attach the `Convert File`
+widget:
+Visit /admin/structure/types/manage/page/fields
+Add new field: `test file`, Field type: `file`, Widget: `Convert File`, Click Save.
+Click <b>Save field settings</b> on next page.
+Near the middle of <b>Basic Page Settings</b>:
+Add the `pdf` format to <b>Allowed file extensions</b>.
+At the bottom of <b>Basic Page Settings</b>:
+select `Convert File` from the <b>Convert using provider</b> dropdown.
+Select `.pdf (application/pdf) from <b>Convert to format</b> dropdown.
+Click <b>Save settings</b>
 
 ### Development with hooks and rules ###
 
