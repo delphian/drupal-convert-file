@@ -24,28 +24,28 @@ enabled via the modules page.
 ### Installation instructions with drush ###
 
 Clone the repository into the sites/all/modules/custom directory:
-`git clone --recursive git://github.com/delphian/drupal-convert-file.git`
+1. `git clone --recursive git://github.com/delphian/drupal-convert-file.git`
 
 Download the Google PHP SDK library 
 (https://code.google.com/p/google-api-php-client/) into sites/all/libraries
 directory:
-`curl "http://google-api-php-client.googlecode.com/files/google-api-php-client-0.6.2.tar.gz" -O`
-`tar -xvf  google-api-php-client-0.6.2.tar.gz`
+1. `curl "http://google-api-php-client.googlecode.com/files/google-api-php-client-0.6.2.tar.gz" -O`
+2. `tar -xvf  google-api-php-client-0.6.2.tar.gz`
 
 Enable modules:
 `drush en convertfile cf_googledrive cf_convertfile -y`
 
 Create a new file field on a piece of content and attach the `Convert File`
 widget:
-Visit /admin/structure/types/manage/page/fields
-Add new field: `test file`, Field type: `file`, Widget: `Convert File`, Click Save.
-Click <b>Save field settings</b> on next page.
-Near the middle of <b>Basic Page Settings</b>:
-Add the `pdf` format to <b>Allowed file extensions</b>.
-At the bottom of <b>Basic Page Settings</b>:
-select `Convert File` from the <b>Convert using provider</b> dropdown.
-Select `.pdf (application/pdf) from <b>Convert to format</b> dropdown.
-Click <b>Save settings</b>
+1. Visit /admin/structure/types/manage/page/fields
+2. Add new field: `test file`, Field type: `file`, Widget: `Convert File`, Click Save.
+3. Click <b>Save field settings</b> on next page.
+4. Near the middle of <b>Basic Page Settings</b>:
+5. Add the `pdf` format to <b>Allowed file extensions</b>.
+6. At the bottom of <b>Basic Page Settings</b>:
+7. select `Convert File` from the <b>Convert using provider</b> dropdown.
+8. Select `.pdf (application/pdf) from <b>Convert to format</b> dropdown.
+9. Click <b>Save settings</b>
 
 ### Development with hooks and rules ###
 
