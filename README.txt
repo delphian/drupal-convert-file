@@ -182,3 +182,11 @@ $form['test_conversion'] = array(
     'specifying the googledrive provider and pdf format',
 );
 ```
+
+### Support, issues and questions ###
+
+The latest relase can be cloned with:
+
+`git clone --recursive git://github.com/delphian/drupal-convert-file.git`
+
+Please submit all issues to https://github.com/delphian/drupal-convert-file/issues
