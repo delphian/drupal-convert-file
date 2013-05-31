@@ -24,11 +24,13 @@ enabled via the modules page.
 ### Installation instructions with drush ###
 
 Clone the repository into the sites/all/modules/custom directory:
+
 1.  `git clone --recursive git://github.com/delphian/drupal-convert-file.git`
 
 Download the Google PHP SDK library 
 (https://code.google.com/p/google-api-php-client/) into sites/all/libraries
 directory:
+
 1.  `curl "http://google-api-php-client.googlecode.com/files/google-api-php-client-0.6.2.tar.gz" -O`
 2.  `tar -xvf  google-api-php-client-0.6.2.tar.gz`
 
@@ -37,6 +39,7 @@ Enable modules:
 
 Create a new file field on a piece of content and attach the `Convert File`
 widget:
+
 1.  Visit /admin/structure/types/manage/page/fields
 2.  Add new field: `test file`, Field type: `file`, Widget: `Convert File`, Click Save.
 3.  Click <b>Save field settings</b> on next page.
