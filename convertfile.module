@@ -137,6 +137,54 @@ function convertfile_field_widget_info() {
 }
 
 /**
+ * Implements hook_element_info().
+ *
+ * Create convertfile_file type for form api use.
+ */
+function convertfile_element_info() {
+  $file_path = drupal_get_path('module', 'file');
+  $types['convertfile_file'] = array(
+    '#input' => TRUE,
+    '#process' => array('file_managed_file_process'),
+    '#value_callback' => 'convertfile_managed_file_value',
+    '#element_validate' => array('file_managed_file_validate'),
+    '#pre_render' => array('file_managed_file_pre_render'),
+    '#theme' => 'file_managed_file',
+    '#theme_wrappers' => array('form_element'),
+    '#progress_indicator' => 'throbber',
+    '#progress_message' => NULL,
+    '#upload_validators' => array(),
+    '#upload_location' => NULL,
+    '#size' => 22,
+    '#extended' => FALSE,
+    '#attached' => array(
+      'css' => array($file_path . '/file.css'),
+      'js' => array($file_path . '/file.js'),
+    ),
+  );
+
+  return $types;
+}
+
+/**
+ * The #value_callback for a convertfile_file type element.
+ */
+function convertfile_managed_file_value(&$element, $input = FALSE, $form_state = NULL) {
+  // Insert our pseudo field instance parameter.
+  $instance = array(
+    'widget' => array(
+      'settings' => array(
+        'convertfile_provider' => 'cf_googledrive',
+        'convertfile_format' => 'pdf',
+      ),
+    ),
+  );
+  $element['#upload_validators']['convertfile_validate_conversion'] = array($instance);
+
+  return file_managed_file_value($element, $input, $form_state);
+}
+
+/**
  * Implements hook_field_widget_settings_form().
  */
 function convertfile_field_widget_settings_form($field, $instance) {

@@ -16,6 +16,12 @@
  */
 function convertfile_config_form() {
 
+  $form['test'] = array(
+    '#type' => 'convertfile_file',
+    '#title' => 'Test Upload',
+    '#stuff' => '#stuff',
+  );
+
   $form['installed_on'] = array(
     '#type' => 'fieldset',
     '#title' => 'Widgets assigned to fields',
@@ -82,7 +88,7 @@ function convertfile_config_form() {
  *
  * @todo Consider: adding some validation?
  */
-function convertfile_config_form_submit($form_id, &$form_state) {
+function convertfile_config_form_submit($form, &$form_state) {
 
   drupal_set_message(t('Settings have been updated.'));
 }
