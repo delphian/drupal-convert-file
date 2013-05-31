@@ -12,7 +12,7 @@
  * Implements hook_enable().
  */
 function cf_googledrive_enable() {
-  drupal_set_message('A new file conversion handler is available: "Google Drive".');
+  drupal_set_message('A new file conversion provider is available: "Google Drive".');
 }
 
 /**

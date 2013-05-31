@@ -19,7 +19,7 @@ function cf_convertapi_form() {
     '#markup' => '<h3>ConvertAPI.com</h3>',
   );
 
-  $markup = '<p>This handler will convert to the following formats:</p>';
+  $markup = '<p>This provider will convert to the following formats:</p>';
   // Create list of formats.
   $markup .= '<ul>';
   $info = cf_convertapi_convertfile_info();

@@ -98,19 +98,19 @@ function convertfile_config_form_submit($form, &$form_state) {
 /**
  * Menu callback.
  *
- * Display all handlers.
+ * Display all providers.
  */
 function convertfile_handler_form() {
-  // Display some helpful text if no handler's have been installed yet.
+  // Display some helpful text if no provider's have been installed yet.
   if (!$info = convertfile_collect_info(TRUE)) {
     $form['hint'] = array(
       '#type' => 'markup',
-      '#markup' => '<p>No file conversion handlers have been installed. You must ' .
-        'install at least one handler to use this module. Convert File comes ' .
-        'with a default handler.</p>',
+      '#markup' => '<p>No file conversion providers have been installed. You must ' .
+        'install at least one provider to use this module. Convert File comes ' .
+        'with some bundled providers.</p>',
     );
     $form['enable'] = array(
-      '#title' => 'Enable Convert File default handler',
+      '#title' => 'Enable provider: Convert File',
       '#type' => 'checkbox',
     );
   }

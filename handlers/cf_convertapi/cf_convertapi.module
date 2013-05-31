@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Convert File Handler that will convert using REST API from convertapi.com.
+ * Convert File provider that will convert using REST API from convertapi.com.
  */
 
 define('CF_CONVERTAPI_TEXT2PDF', 'http://do.convertapi.com/text2pdf');

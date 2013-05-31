@@ -19,7 +19,7 @@ function cf_convertfile_form() {
     '#markup' => '<h3>Convert File</h3>',
   );
 
-  $markup = '<p>This handler will convert to the following formats:</p>';
+  $markup = '<p>This provider will convert to the following formats:</p>';
   // Create list of formats.
   $markup .= '<ul>';
   $info = cf_convertfile_convertfile_info();

@@ -49,8 +49,8 @@ function convertfile_menu() {
   // Provide a page to handle watchdog error messages.
   $items['admin/config/convertfile/settings/handler'] = array(
     'type' => MENU_LOCAL_TASK,
-    'title' => 'Handlers',
-    'description' => 'All installed file conversion handlers.',
+    'title' => 'Providers',
+    'description' => 'All installed file conversion providers.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('convertfile_handler_form'),
     'access arguments' => array('administer convertfile settings'),
@@ -291,9 +291,9 @@ function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, 
 }
 
 /**
- * Validator. Will call any registered handlers.
+ * Validator. Will call any registered providers.
  *
- * In the event of an error the handler should write an error message to
+ * In the event of an error the provider should write an error message to
  * $file->convertfile_error.
  *
  * @param stdClass $file
@@ -405,9 +405,9 @@ function convertfile_help($path, $arg) {
 
   // Settings page and all children.
   if (strpos($path, 'admin/config/convertfile/settings') !== FALSE) { 
-    // Help text if no handlers have been enabled.
-    $handlers = convertfile_collect_info();
-    if (empty($handlers)) {
+    // Help text if no providers have been enabled.
+    $providers = convertfile_collect_info();
+    if (empty($providers)) {
       $help .= '<p>' . t('You must have at least one conversion provider enabled for this module to do anything useful. Visit the <a href="/admin/modules">modules page</a> and enable a conversion provider.') . '</p>';
     }
     // Help text if no widgets have been configured yet.

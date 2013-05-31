@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Provide a default conversion handler.
+ * Provide a default conversion provider.
  */
 
 /**
@@ -13,7 +13,7 @@ function cf_convertfile_menu() {
   $items['admin/config/convertfile/settings/handler/convertfile'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'Convert File',
-    'description' => 'Default handler provided by Convert File module.',
+    'description' => 'Default provider of Convert File module.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('cf_convertfile_form'),
     'access arguments' => array('administer convertfile settings'),
@@ -28,7 +28,7 @@ function cf_convertfile_menu() {
 /**
  * Implements hook_convertfile_info().
  *
- * Register our handler and formats with convertfile module.
+ * Register our provider and formats with convertfile module.
  */
 function cf_convertfile_convertfile_info() {
   return array(

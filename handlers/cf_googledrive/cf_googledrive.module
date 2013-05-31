@@ -52,7 +52,7 @@ function cf_googledrive_libraries_info() {
 /**
  * Implements hook_convertfile_info().
  *
- * Register our handler and formats with convertfile module.
+ * Register our provider and formats with convertfile module.
  */
 function cf_googledrive_convertfile_info() {
   $types = array(
@@ -89,7 +89,7 @@ function cf_googledrive_help($path, $arg) {
           '  <li>Create an API project in the <a href="https://code.google.com/apis/console/">Google APIs Console</a>.</li>' .
           '  <li>Select the <b>Services</b> tab in your API project, and enable the Drive API <u>and</u> Drive SDK.</li>' .
           '  <li>Select the <b>API Access</b> tab in your API project, and click <b>Create an OAuth 2.0 client ID</b>.</li>' .
-          '  <li>In the <b>Branding Information</b> section, provide a name for your application (e.g. "Drupal Convert File Google Drive Handler"), and click <b>Next</b>. Providing a product logo is optional.</li>' .
+          '  <li>In the <b>Branding Information</b> section, provide a name for your application (e.g. "Drupal Convert File Google Drive Provider"), and click <b>Next</b>. Providing a product logo is optional.</li>' .
           '  <li>In the <b>Client ID Settings</b> section, do the following:</li>' .
           '  <ol>' .
           '    <li>Select <b>Web application</b> for the <b>Application type</b>.</li>' .

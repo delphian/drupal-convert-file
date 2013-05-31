@@ -64,7 +64,7 @@ an individual Google Drive account to this application.
 1.  Create an API project in the <a href="https://code.google.com/apis/console/">Google APIs Console</a>.
 2.  Select the <b>Services</b> tab in your API project, and enable the Drive API <u>and</u> Drive SDK.
 3.  Select the <b>API Access</b> tab in your API project, and click <b>Create an OAuth 2.0 client ID</b>.
-4.  In the <b>Branding Information</b> section, provide a name for your application `Drupal Convert File Google Drive Handler`, and click <b>Next</b>. Providing a product logo is optional.
+4.  In the <b>Branding Information</b> section, provide a name for your application `Drupal Convert File Google Drive Provider`, and click <b>Next</b>. Providing a product logo is optional.
 5.  In the <b>Client ID Settings</b> section, do the following:
   1.  Select <b>Web application</b> for the <b>Application type</b>.
   2.  Click the <b>more options</b> link next to the heading, <b>Your site or hostname</b>.
@@ -103,7 +103,7 @@ gzip conversions.
 /**
  * Implements hook_convertfile_info().
  *
- * Register our handler and formats with convertfile module.
+ * Register our provider and formats with convertfile module.
  */
 function cf_convertfile_convertfile_info() {
   return array(

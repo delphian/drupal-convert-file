@@ -55,7 +55,7 @@ function cf_googledrive_client() {
 
   if (variable_get('cf_googledrive_client_id', FALSE)) {
     $client = new Google_Client();
-    $client->setApplicationName('Drupal Convert File Google Drive Handler');
+    $client->setApplicationName('Drupal Convert File Google Drive Provider');
     $client->setClientId(variable_get('cf_googledrive_client_id', NULL));
     $client->setClientSecret(variable_get('cf_googledrive_client_secret', NULL));
     $client->setRedirectUri(variable_get('cf_googledrive_client_redirect', NULL));
