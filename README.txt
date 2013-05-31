@@ -35,7 +35,8 @@ directory:
 2.  `tar -xvf  google-api-php-client-0.6.2.tar.gz`
 
 Enable modules:
-`drush en convertfile cf_googledrive cf_convertfile -y`
+
+1. `drush en convertfile cf_googledrive cf_convertfile -y`
 
 Create a new file field on a piece of content and attach the `Convert File`
 widget:
@@ -47,8 +48,29 @@ widget:
 5.  Add the `pdf` format to <b>Allowed file extensions</b>.
 6.  At the bottom of <b>Basic Page Settings</b>:
 7.  select `Convert File` from the <b>Convert using provider</b> dropdown.
-8.  Select `.pdf (application/pdf) from <b>Convert to format</b> dropdown.
+8.  Select `.pdf (application/pdf)` from <b>Convert to format</b> dropdown.
 9.  Click <b>Save settings</b>
+
+Create google application required by `Google Drive` provider:
+
+The cf_googledrive provider module must use a google application to access
+the Google Drive service. Google will then check which individual users have
+granted the google application access to their Google Drive. The application
+must first be created at google. After creation, submit the app identification
+and secret key below so that drupal can authenticate itself as operating on
+behalf of this new application. Then you will be able to connect (authorize)
+an individual Google Drive account to this application.
+
+1.  Create an API project in the <a href="https://code.google.com/apis/console/">Google APIs Console</a>.
+2.  Select the <b>Services</b> tab in your API project, and enable the Drive API <u>and</u> Drive SDK.
+3.  Select the <b>API Access</b> tab in your API project, and click <b>Create an OAuth 2.0 client ID</b>.
+4.  In the <b>Branding Information</b> section, provide a name for your application (e.g. "Drupal Convert File Google Drive Handler"), and click <b>Next</b>. Providing a product logo is optional.
+5.  In the <b>Client ID Settings</b> section, do the following:
+  1.  Select <b>Web application</b> for the <b>Application type</b>.
+  2.  Click the <b>more options</b> link next to the heading, <b>Your site or hostname</b>.
+  3.  Enter `http://www.localhost.com/admin/config/convertfile/settings/handler/googledrive` in the <b>Authorized Redirect URIs</b> field. This must be a valid top level domain. Leave the javascript field empty.
+  4.  Click <b>Create Client ID</b>.
+6.  In the <b>API Access</b> page, locate the section <b>Client ID for Web applications</b> and note the <b>Client ID</b> and <b>Client Secret</b> values.
 
 ### Development with hooks and rules ###
 
