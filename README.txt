@@ -10,6 +10,13 @@ Editing the widget settings will show two new drop down options. The first
 allows the selection of a provider that will deal with transformations, the
 second will specify to what format the provider can change file/images to.
 
+### Default providers ###
+
+Two default providers come with the module: `Convert File` and `Google Drive`.
+Convert File will gzip an uploaded file, while Google Drive will convert the
+file into pdf format. These providers are not active by default and must be
+enabled via the modules page.
+
 ### Development with hooks and rules ###
 
 A hook is provided for third party modules to declare themselves as a
@@ -171,7 +178,7 @@ $form['test_conversion'] = array(
   '#title' => 'Test file conversion',
   '#convertfile_provider' => 'cf_googledrive',
   '#convertfile_format' => 'pdf',
-  '#description' => 'Test out the File API element type convertfile_file by ' . 
+  '#description' => 'Test out the Form API element type convertfile_file by ' . 
     'specifying the googledrive provider and pdf format',
 );
 ```
