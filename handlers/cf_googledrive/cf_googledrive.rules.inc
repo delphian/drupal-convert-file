@@ -43,6 +43,7 @@ function cf_googledrive_rules_action_info() {
  *   properties absense means success.
  *
  * @see cf_convertfile_rules_action_info()
+ * @see convertfile_validate_conversion()
  */
 function cf_googledrive_action_pdf($file, $instance) {
   $report = FALSE;
@@ -63,7 +64,10 @@ function cf_googledrive_action_pdf($file, $instance) {
             $file->filename = $base . '.' . $ext . '.' . $ext_new;
             $file->filesize = filesize($file->uri);
             $file->filemime = file_get_mimetype($file->filename);
-            $file->destination = $file->destination . '.' . $ext_new;
+            // We only need to update the destination if this is a new upload.
+            if (!isset($file->fid)) {
+              $file->destination = $file->destination . '.' . $ext_new;
+            }
             $report = TRUE;
           }
           else {
