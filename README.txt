@@ -160,7 +160,7 @@ function cf_convertfile_default_rules_configuration() {
 }
 ```
 
-### Development with custom field api element type ###
+### Development with custom Form API element type ###
 
 Convert file can be initiated while using the Form API by specifying the
 custom element type `convertfile_file`
