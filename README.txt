@@ -10,12 +10,21 @@ Editing the widget settings will show two new drop down options. The first
 allows the selection of a provider that will deal with transformations, the
 second will specify to what format the provider can change file/images to.
 
+All the heavy lifting occurs in file upload validators while the file is still
+located in the temporary apache upload directory, and before drupal has
+formally saved the file.
+
 ### Default providers ###
 
 Two default providers come with the module: `Convert File` and `Google Drive`.
 Convert File will gzip an uploaded file, while Google Drive will convert the
 file into pdf format. These providers are not active by default and must be
 enabled via the modules page.
+
+### Installation instructions ###
+
+Clone the repository into the sites/all/modules/custom directory.
+`git clone --recursive git://github.com/delphian/drupal-convert-file.git`
 
 ### Development with hooks and rules ###
 
@@ -185,8 +194,8 @@ $form['test_conversion'] = array(
 
 ### Support, issues and questions ###
 
-The latest relase can be cloned with:
-
-`git clone --recursive git://github.com/delphian/drupal-convert-file.git`
+The latest relase can be cloned with: `git clone --recursive git://github.com/delphian/drupal-convert-file.git`
 
 Please submit all issues to https://github.com/delphian/drupal-convert-file/issues
+
+Feel free to contact me bryan.hazelbaker@gmail.com with any questions.
