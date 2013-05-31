@@ -22,7 +22,7 @@ function convertfile_config_form() {
     '#title' => 'Test file conversion',
     '#convertfile_provider' => 'cf_googledrive',
     '#convertfile_format' => 'pdf',
-    '#description' => 'Test out the File API element type convertfile_file',
+    '#description' => 'Test out the Google Drive provider (to pdf).',
   );
 
   $form['installed_on'] = array(
