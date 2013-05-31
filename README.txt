@@ -160,4 +160,18 @@ function cf_convertfile_default_rules_configuration() {
 }
 ```
 
-### Development with custom field api type ###
+### Development with custom field api element type ###
+
+Convert file can be initiated while using the Form API by specifying the
+custom element type `convertfile_file`
+
+```php
+$form['test_conversion'] = array(
+  '#type' => 'convertfile_file',
+  '#title' => 'Test file conversion',
+  '#convertfile_provider' => 'cf_googledrive',
+  '#convertfile_format' => 'pdf',
+  '#description' => 'Test out the File API element type convertfile_file by ' . 
+    'specifying the googledrive provider and pdf format',
+);
+```
