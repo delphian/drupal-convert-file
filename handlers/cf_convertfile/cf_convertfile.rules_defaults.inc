@@ -1,5 +1,8 @@
 <?php
 
+/**
+ * Implements hook_default_rules_configuration().
+ */
 function cf_convertfile_default_rules_configuration() {
   $configs = array();
 

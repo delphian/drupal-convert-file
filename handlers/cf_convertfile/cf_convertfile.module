@@ -31,14 +31,12 @@ function cf_convertfile_menu() {
  * Register our handler and formats with convertfile module.
  */
 function cf_convertfile_convertfile_info() {
-  $types = array(
-    'gz' => '.gz (application/x-gzip)',
-  );
-
   return array(
     'cf_convertfile' => array(
       'name' => 'Convert File',
-      'types' => $types,
+      'types' => array (
+        'gz' => '.gz (application/x-gzip)',
+      ),
     ),
   );
 }

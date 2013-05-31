@@ -1,3 +1,5 @@
+## Drupal Convert File ##
+
 A Drupal widget to automatically convert an uploaded file or image to
 pdf or other sundry formats before being saved by drupal.
 
@@ -7,6 +9,8 @@ Two widgets will be installed, `Convert File` for file field types, and
 Editing the widget settings will show two new drop down options. The first
 allows the selection of a provider that will deal with transformations, the
 second will specify to what format the provider can change file/images to.
+
+### Development with hooks and rules ###
 
 A hook is provided for third party modules to declare themselves as a
 provider for file conversions: `hook_convertfile_info()`.
@@ -21,24 +25,55 @@ gzip conversions.
  * Register our handler and formats with convertfile module.
  */
 function cf_convertfile_convertfile_info() {
-  $types = array(
-    'cf_convertfile_gz' => '.gz (application/x-gzip)',
-  );
-
   return array(
     'cf_convertfile' => array(
       'name' => 'Convert File',
-      'types' => $types,
+      'types' => array (
+        'gz' => '.gz (application/x-gzip)',
+      ),
     ),
   );
 }
 ```
 
-A dirty implemenation is possible by using the callback variable and filling
-it with the name of a function to do the conversion. This is not recommended,
-however as an example the entire rules functionality could be bypassed by
-calling the rules action function directly 
-`'callback' => 'cf_convertfile_rules_action_info'`
+Now fields that use the file field widget `Convert File` will have an option
+to select the provider as `Convert File` and a format of 
+`.gz (application/x-gzip)`
+
+When a file is uploaded into this field a custom #upload_validators callback
+will be executed. This callback will invoke the rule event `File conversion has 
+been requested`.
+
+Each provider will declare its own rules actions, generally one for each
+format provided, and provide default rules that listen for the file conversion
+event.
+
+```php
+/**
+ * Implements hook_rules_action_info().
+ *
+ * Register the convertfile gzip action with rules.
+ */
+function cf_convertfile_rules_action_info() {
+  return array(
+    'cf_convertfile_gzip' => array(
+      'label' => t('Convert file to .gz (application/x-gzip) using Convert File'),
+      'parameter' => array(
+        'file' => array(
+          'type' => 'file',
+          'label' => t('File to convert'),
+        ),
+        'instance' => array(
+          'type' => 'struct',
+          'label' => t('Field instance data'),
+        ),
+      ),
+      'group' => t('Convert File'),
+      'base' => 'cf_convertfile_action_gzip',
+    ),
+  );
+}
+```
 
 ```php
 /**
@@ -83,6 +118,46 @@ function cf_convertfile_action_gzip($file, $instance) {
 }
 ```
 
-Please do not contribute any handlers that use a function callback. Rules is
-the recommended method of doing conversions. Copy and modify the
-cf_convertfile handler as a template for a new handler.
+Listen for the convert file request event and execute our gzip action if
+appropriate conditions are met:
+
+```php
+/**
+ * Implements hook_default_rules_configuration().
+ */
+function cf_convertfile_default_rules_configuration() {
+  $configs = array();
+
+  // Automkatically gzip all text files uploaded to 'convert_file' widgets.
+  $rule = '{ "cf_convertfile_gzip" : {
+    "LABEL" : "CF Convert File convert to GZ",
+    "PLUGIN" : "reaction rule",
+    "TAGS" : [ "gzip", "convertfile", "gz" ],
+    "REQUIRES" : [ "convertfile", "cf_convertfile", "rules" ],
+    "ON" : [ "convertfile_request" ],
+    "IF" : [
+      { "convertfile_condition_provider" : {
+          "instance" : [ "instance" ],
+          "provider" : { "value" : { "cf_convertfile" : "cf_convertfile" } }
+        }
+      },
+      { "convertfile_condition_format" : {
+          "instance" : [ "instance" ],
+          "format" : { "value" : { "gz" : "gz" } }
+        }
+      }
+    ],
+    "DO" : [
+      { "cf_convertfile_gzip" : { "file" : [ "file" ], "instance" : [ "instance" ] } },
+      { "drupal_message" : { "message" : "Your file has been compressed to reduce disk usage." } }
+    ]
+  }
+}';
+
+  $configs['cf_convertfile_gzip'] = rules_import($rule);
+
+  return $configs;
+}
+```
+
+### Development with custom field api type ###
