@@ -18,7 +18,7 @@ formally saved the file.
 
 Two default providers come with the module: `Convert File` and `Google Drive`.
 Convert File will gzip an uploaded file, while Google Drive will convert the
-file into pdf format. These providers are not active by default and must be
+file into pdf or txt formats. These providers are not active by default and must be
 enabled via the modules page.
 
 ### Installation instructions with drush ###
