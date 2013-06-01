@@ -57,6 +57,7 @@ function cf_googledrive_libraries_info() {
 function cf_googledrive_convertfile_info() {
   $types = array(
     'pdf' => '.pdf (application/pdf)',
+    'txt' => '.txt (text/plain)',
   );
 
   return array(

@@ -25,6 +25,21 @@ function cf_googledrive_rules_action_info() {
       'group' => t('Convert File'),
       'base' => 'cf_googledrive_action_pdf',
     ),
+    'cf_googledrive_txt' => array(
+      'label' => t('Convert file to .txt (application/txt) using Google Drive'),
+      'parameter' => array(
+        'file' => array(
+          'type' => 'file',
+          'label' => t('File to convert'),
+        ),
+        'instance' => array(
+          'type' => 'struct',
+          'label' => t('Field instance data'),
+        ),
+      ),
+      'group' => t('Convert File'),
+      'base' => 'cf_googledrive_action_txt',
+    ),
   );
 }
 
@@ -32,20 +47,74 @@ function cf_googledrive_rules_action_info() {
  * Rules action convert file to pdf format.
  *
  * @param stdClass $file
- *   File object that is being readied to be moved from temporary server
- *   upload bin.
+ *   File object to convert.
  * @param array $instance
  *   Field instance that this file was submitted to.
  *
  * @return
- *   Sets new property of convertfile_error to a string containing an error
- *   message on the $file object if an error was encountered, otherwise
- *   properties absense means success.
+ *   TRUE on success, FALSE on failure. Also, sets new property of 
+ *   convertfile_error to a string containing an error message on the $file
+ *   object if an error was encountered, otherwise properties absense means
+ *   success.
  *
  * @see cf_convertfile_rules_action_info()
  * @see convertfile_validate_conversion()
  */
 function cf_googledrive_action_pdf($file, $instance) {
+  $report = FALSE;
+
+  $report = cf_googledrive_action_common($file, $instance, 'application/pdf', 'pdf');
+
+  return $report;
+}
+
+/**
+ * Rules action convert file to txt format.
+ *
+ * @param stdClass $file
+ *   File object to convert.
+ * @param array $instance
+ *   Field instance that this file was submitted to.
+ *
+ * @return
+ *   TRUE on success, FALSE on failure. Also, sets new property of 
+ *   convertfile_error to a string containing an error message on the $file
+ *   object if an error was encountered, otherwise properties absense means
+ *   success.
+ *
+ * @see cf_convertfile_rules_action_info()
+ * @see convertfile_validate_conversion()
+ */
+function cf_googledrive_action_txt($file, $instance) {
+  $report = FALSE;
+
+  $report = cf_googledrive_action_common($file, $instance, 'text/plain', 'txt');
+
+  return $report;
+}
+
+/**
+ * Upload a file to google drive, convert to google document, and re-download
+ * in another format.
+ *
+ * @param stdClass $file
+ *   File object to convert.
+ * @param array $instance
+ *   Field instance that this file was submitted to.
+ * @param string $format
+ *   Mime type to download a google document as.
+ *
+ * @return
+ *   TRUE on success, FALSE on failure. Also, sets new property of 
+ *   convertfile_error to a string containing an error message on the $file
+ *   object if an error was encountered, otherwise properties absense means
+ *   success.
+ *
+ * @see cf_convertfile_action_pdf()
+ * @see cf_convertfile_action_txt()
+ * @see cf_convertfile_action_html()
+ */
+function cf_googledrive_action_common($file, $instance, $format, $extension) {
   $report = FALSE;
   $settings = $instance['widget']['settings'];
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
@@ -57,10 +126,10 @@ function cf_googledrive_action_pdf($file, $instance) {
     if ($service = cf_googledrive_service(cf_googledrive_client())) {
       $g_file = cf_googledrive_insert_file($service, $file->filename, 'temporary', NULL, $file->filemime, $file->uri);
       if ($g_file) {
-        if ($data = cf_googledrive_download_file($service, $g_file, 'application/pdf')) {
+        if ($data = cf_googledrive_download_file($service, $g_file, $format)) {
           $fp = fopen($file->uri, "wbx");
           if (fwrite($fp, $data)) {
-            $ext_new = 'pdf';
+            $ext_new = $extension;
             $file->filename = $base . '.' . $ext . '.' . $ext_new;
             $file->filesize = filesize($file->uri);
             $file->filemime = file_get_mimetype($file->filename);
@@ -79,7 +148,7 @@ function cf_googledrive_action_pdf($file, $instance) {
         }
         // Remove the file from Google Drive.
         if (!cf_googledrive_delete_file($service, $g_file->getId())) {
-          watchdog('convertfile', 'Can not remove from google drive.', NULL, WATCHDOG_ERROR);
+         watchdog('convertfile', 'Can not remove from google drive.', NULL, WATCHDOG_ERROR);
         }
       }
       else {
