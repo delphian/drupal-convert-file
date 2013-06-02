@@ -14,7 +14,8 @@
  */
 function convertfile_enable() {
   // Install the database schema.
-  drupal_install_schema('convertfile');
+  module_load_include('inc', 'convertfile', 'convertfile.db.conversion');
+  drupal_install_schema(CONVERTFILE_DB_CONVERSION);
   // Generate a friendly message to inform the admin what to do next after
   // enabling the module.
   drupal_set_message(t('Please configure the module at') . ' <a href="/admin/config/convertfile/settings">/admin/config/convertfile/settings</a>', 'status');
@@ -25,7 +26,8 @@ function convertfile_enable() {
  */
 function convertfile_uninstall() {
   // Uninstall the database schema.
-  drupal_uninstall_schema('mymodule');
+  module_load_include('inc', 'convertfile', 'convertfile.db.conversion');
+  drupal_uninstall_schema(CONVERTFILE_DB_CONVERSION);
   // Get module variables
   $results = db_query("SELECT v.name FROM {variable} AS v WHERE v.name LIKE '%s%%'", 'convertfile_');
   // Remove variables
@@ -38,43 +40,8 @@ function convertfile_uninstall() {
  * Implements hook_schema().
  */
 function convertfile_schema() {
-  $schema['convertfile'] = array(
-    'description' => 'Tracking original file uploads against their converted results.',
-    'fields' => array(
-      'cid' => array(
-        'description' => 'The primary identifier for a conversion.',
-        'type' => 'serial',
-        'unsigned' => TRUE,
-        'not null' => TRUE
-      ),
-      'fid_backup' => array(
-        'description' => 'A previous version of the file.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0
-      ),
-      'fid_current' => array(
-        'description' => 'The current converted file.',
-        'type' => 'int',
-        'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0
-      ),
-      'created' => array(
-        'description' => 'The Unix timestamp when the conversion was created.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0),
-      ),
-    'indexes' => array(
-      'fid_current' => array('fid_current'),
-    ),
-    'unique keys' => array(
-      'fid_backup_fid_current' => array('fid_backup', 'fid_current'),
-    ),
-    'primary key' => array('cid'),
-  );
+  module_load_include('inc', 'convertfile', 'convertfile.db.conversion');
+  $schema = convertfile_db_conversion_schema();
 
   return $schema;
 }
