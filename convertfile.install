@@ -2,9 +2,10 @@
 
 /**
  * @file
- * Installation functionality.
+ * Functionality related to module install and uninstall.
  *
- * Post a drupal message each time the module is enabled. Cleanup old
+ * Install database schema, default variables and post a friendly drupal
+ * message each time the module is enabled. Remove database schema and
  * variables when module is uninstalled.
  */
 
@@ -12,6 +13,8 @@
  * Implements hook_enable().
  */
 function convertfile_enable() {
+  // Install the database schema.
+  drupal_install_schema('convertfile');
   // Generate a friendly message to inform the admin what to do next after
   // enabling the module.
   drupal_set_message(t('Please configure the module at') . ' <a href="/admin/config/convertfile/settings">/admin/config/convertfile/settings</a>', 'status');
@@ -21,5 +24,61 @@ function convertfile_enable() {
  * Implements hook_uninstall().
  */
 function convertfile_uninstall() {
-  // Remove all our variables.
+  // Uninstall the database schema.
+  drupal_uninstall_schema('mymodule');
+  // Get module variables
+  $results = db_query("SELECT v.name FROM {variable} AS v WHERE v.name LIKE '%s%%'", 'convertfile_');
+  // Remove variables
+  while ($row = db_fetch_array($results)) {
+    variable_del($row['name']);
+  }  
+}
+
+/**
+ * Implements hook_schema().
+ */
+function convertfile_schema() {
+  $schema['convertfile'] = array(
+    'description' => 'Tracking original file uploads against their converted results.',
+    'fields' => array(
+      'cid' => array(
+        'description' => 'The primary identifier for a conversion.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE),
+      'fid_original' => array(
+        'description' => 'The original file as uploaded.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'fid_converted' => array(
+        'description' => 'The current converted file.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0),
+      'created' => array(
+        'description' => 'The Unix timestamp when the conversion was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+      'changed' => array(
+        'description' => 'The Unix timestamp when the conversion was most recently saved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0),
+      ),
+    'indexes' => array(
+      'convert_changed' => array('changed'),
+      'convert_created' => array('created'),
+      ),
+    'unique keys' => array(
+      'fid_original_fid_converted' => array('fid_original', 'fid_converted'),
+      'fid_original' => array('fid_original'),
+      ),
+    'primary key' => array('cid'),
+  );
+
+  return $schema;
 }
