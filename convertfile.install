@@ -45,38 +45,34 @@ function convertfile_schema() {
         'description' => 'The primary identifier for a conversion.',
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not null' => TRUE),
-      'fid_original' => array(
-        'description' => 'The original file as uploaded.',
+        'not null' => TRUE
+      ),
+      'fid_backup' => array(
+        'description' => 'A previous version of the file.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0),
-      'fid_converted' => array(
+        'default' => 0
+      ),
+      'fid_current' => array(
         'description' => 'The current converted file.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
-        'default' => 0),
+        'default' => 0
+      ),
       'created' => array(
         'description' => 'The Unix timestamp when the conversion was created.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0),
-      'changed' => array(
-        'description' => 'The Unix timestamp when the conversion was most recently saved.',
-        'type' => 'int',
-        'not null' => TRUE,
-        'default' => 0),
       ),
     'indexes' => array(
-      'convert_changed' => array('changed'),
-      'convert_created' => array('created'),
-      ),
+      'fid_current' => array('fid_current'),
+    ),
     'unique keys' => array(
-      'fid_original_fid_converted' => array('fid_original', 'fid_converted'),
-      'fid_original' => array('fid_original'),
-      ),
+      'fid_backup_fid_current' => array('fid_backup', 'fid_current'),
+    ),
     'primary key' => array('cid'),
   );
 

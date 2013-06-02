@@ -8,23 +8,25 @@
 /**
  * Write a new conversion record to the databse.
  *
- * @param int $fid_original
- *   The FID of the original uploaded file.
- * @param int $fid_converted
+ * @param int $fid_backup
+ *   The FID of the original file.
+ * @param int $fid_current
  *   The FID of the newly converted file.
+ * @param int $uid
+ *   User identification that owns these files.
  *
  * @return int|bool
  *   The inserted CID (unique record id) on success, FALSE on failure.
  */
-function convertfile_db_insert($fid_original, $fid_converted) {
+function convertfile_db_insert($fid_backup, $fid_current, $uid) {
   $cid = FALSE;
 
   // Initializing $record array with values.
   $record = array(
-    'fid_original' => $fid_original,
-    'fid_converted' => $fid_converted,
+    'fid_backup' => $fid_backup,
+    'fid_current' => $fid_current,
+    'uid' => $uid,
     'created' => time(),
-    'updated' => time(),
   );
   // Inserting $record (data) into the database. Here $table variable contains the name of the table.
   if (drupal_write_record('convertfile', $record)) {
