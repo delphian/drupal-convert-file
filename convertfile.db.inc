@@ -36,3 +36,26 @@ function convertfile_db_insert($fid_backup, $fid_current, $uid) {
 
   return $cid;
 }
+
+/**
+ * Retrieve a convertfile record based on CID.
+ *
+ * @param int $cid
+ *   The unique file conversion identifier.
+ *
+ * @return array|bool
+ *   An assocative array containing:
+ *   - 'fid_backup' : (int) The previous file before conversion.
+ *   - 'fid_current' : (int) The file after conversion.
+ *   - 'uid' : (int) The owner of both files.
+ *   - 'created' : (string) When the conversion was done.
+ *   Or FALSE on failure or non existing record identifier.
+ */
+function convertfile_db_select($cid) {
+  $record = db_select('convertfile')
+    ->condition('cid', $cid)
+    ->execute()
+    ->fetchAssoc();
+
+  return $record;
+}
