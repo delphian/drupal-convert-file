@@ -59,3 +59,20 @@ function convertfile_db_select($cid) {
 
   return $record;
 }
+
+/**
+ * Delete a convertfile record based on CID.
+ *
+ * @param int $cid
+ *   The unique file conversion identifier.
+ *
+ * @return bool
+ *   TRUE on success, FALSE on failure.
+ */
+function convertfile_db_delete($cid) {
+  $num_deleted = db_delete('convertfile')
+    ->condition('cid', $cid)
+    ->execute();
+  
+  return ($num_deleted) ? TRUE : FALSE;
+}
