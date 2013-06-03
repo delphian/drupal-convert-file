@@ -167,7 +167,7 @@ function cf_convertfile_rules_action_info() {
  *   Field instance that this file was submitted to.
  *
  * @return
- *   Sets new property of convertfile_error to TRUE on the $file object if an
+ *   Sets new property of $file->convertfile['error'] to TRUE on if an
  *   error was encountered, otherwise properties absense means success.
  *
  * @see cf_convertfile_rules_action_info()
@@ -194,7 +194,7 @@ function cf_convertfile_action_gzip($file, $instance) {
   }
 
   if (!$success) {
-    $file->convertfile_error = TRUE;
+    $file->convertfile['error'] = TRUE;
   }
 }
 ```

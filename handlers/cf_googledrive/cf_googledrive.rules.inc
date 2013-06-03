@@ -52,10 +52,9 @@ function cf_googledrive_rules_action_info() {
  *   Field instance that this file was submitted to.
  *
  * @return
- *   TRUE on success, FALSE on failure. Also, sets new property of 
- *   convertfile_error to a string containing an error message on the $file
- *   object if an error was encountered, otherwise properties absense means
- *   success.
+ *   TRUE on success, FALSE on failure. Also, sets property
+ *   $file->convertfile['error'] to a string containing an error message if
+ *   an error was encountered, otherwise properties absense means success.
  *
  * @see cf_convertfile_rules_action_info()
  * @see convertfile_validate_conversion()
@@ -78,8 +77,8 @@ function cf_googledrive_action_pdf($file, $instance) {
  *
  * @return
  *   TRUE on success, FALSE on failure. Also, sets new property of 
- *   convertfile_error to a string containing an error message on the $file
- *   object if an error was encountered, otherwise properties absense means
+ *   c$file->convertfile['error'] to a string containing an error message 
+ *   if an error was encountered, otherwise properties absense means
  *   success.
  *
  * @see cf_convertfile_rules_action_info()
@@ -106,8 +105,8 @@ function cf_googledrive_action_txt($file, $instance) {
  *
  * @return
  *   TRUE on success, FALSE on failure. Also, sets new property of 
- *   convertfile_error to a string containing an error message on the $file
- *   object if an error was encountered, otherwise properties absense means
+ *   $file->convertfile['error'] to a string containing an error message 
+ *   if an error was encountered, otherwise properties absense means
  *   success.
  *
  * @see cf_convertfile_action_pdf()
@@ -140,11 +139,11 @@ function cf_googledrive_action_common($file, $instance, $format, $extension) {
             $report = TRUE;
           }
           else {
-            $file->convertfile_error = 'Could not write file to disk.';
+            $file->convertfile['error'] = 'Could not write file to disk.';
           }
         }
         else {
-          $file->convertfile_error = 'Could not retrieve converted file.';
+          $file->convertfile['error'] = 'Could not retrieve converted file.';
         }
         // Remove the file from Google Drive.
         if (!cf_googledrive_delete_file($service, $g_file->getId())) {
@@ -152,14 +151,14 @@ function cf_googledrive_action_common($file, $instance, $format, $extension) {
         }
       }
       else {
-        $file->convertfile_error = 'Could not upload file.';
+        $file->convertfile['error'] = 'Could not upload file.';
       }
     }
     else {
-      $file->convertfile_error = 'Could not connect to service.';
+      $file->convertfile['error'] = 'Could not connect to service.';
     }
   } else {
-    $file->convertfile_error = 'Could not find Google API PHP Client library.';
+    $file->convertfile['error'] = 'Could not find Google API PHP Client library.';
   }
 
   return $report;

@@ -335,7 +335,7 @@ function convertfile_convert_file($file, $provider, $format) {
  *
  * This is the main function to call when converting a file. In the event of
  * an error the provider should write an error message to
- * $file->convertfile_error.
+ * $file->convertfile['error'].
  *
  * @param stdClass $file
  *   File object that is being readied to be moved from temporary server
@@ -357,7 +357,6 @@ function convertfile_validate_conversion($file, $instance) {
   // Save original information for any checks done after conversion is over.
   $file->convertfile = array();
   $file->convertfile['original'] = clone $file;
-  $file->convertfile_original = clone $file;
 
   $info = convertfile_collect_info();
   // If no provider is provided (I.E. None or isset == false), treat the file
@@ -389,7 +388,7 @@ function convertfile_validate_conversion($file, $instance) {
     else {
       // Everything _should be_ rules based.
       rules_invoke_event('convertfile_request', $file, $instance);
-      if (isset($file->convertfile_error)) {
+      if (isset($file->convertfile['error'])) {
         $report[] = "File conversion by {$name} rule failed.";
       }
     }
@@ -398,12 +397,12 @@ function convertfile_validate_conversion($file, $instance) {
     if (isset($file->fid) && $file->fid) {
       file_save($file);
       $dir = drupal_dirname($file->uri);
-      $original = $file->convertfile_original;
+      $original = $file->convertfile['original'];
       if ($moved_file = file_move($file, $dir . $file->filename, FILE_EXISTS_RENAME)) {
         $file->uri = $moved_file->uri;
       }
       else {
-        $file->convertfile_error = 'Unable to rename file.';
+        $file->convertfile['error'] = 'Unable to rename file.';
         $report[] = "Unable to rename file.";
       }
     }
@@ -415,13 +414,13 @@ function convertfile_validate_conversion($file, $instance) {
 
     // Log successful file conversion.
     if (empty($report)) {
-      watchdog('convertfile', "{$name} Saved: {$file->convertfile_original->filename} To: {$file->filename} " . 
+      watchdog('convertfile', "{$name} Saved: {$file->convertfile['original']->filename} To: {$file->filename} " . 
         "({$file->uri})", NULL, WATCHDOG_INFO);
       rules_invoke_event('convertfile_success', $file, $instance);
     }
     // Log failed file conversion.
     else {
-      watchdog('convertfile', "{$name} Failed to convert {$file->convertfile_original->filename}. {$file->convertfile_error}", NULL, WATCHDOG_ERROR);
+      watchdog('convertfile', "{$name} Failed to convert {$file->convertfile['original']->filename}. {$file->convertfile['error']}", NULL, WATCHDOG_ERROR);
       rules_invoke_event('convertfile_failure', $file, $instance);
     }
   }
