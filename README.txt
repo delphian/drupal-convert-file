@@ -14,6 +14,9 @@ All the heavy lifting occurs in file upload validators while the file is still
 located in the temporary apache upload directory, and before drupal has
 formally saved the file.
 
+Backups will be made of the original file and linked via a custom table to
+the actual current file.
+
 ### Default providers ###
 
 Two default providers come with the module: `Convert File` and `Google Drive`.
