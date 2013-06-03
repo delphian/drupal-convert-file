@@ -125,6 +125,27 @@ function convertfile_db_conversion_delete($cid) {
 }
 
 /**
+ * Delete all backup associations for a file.
+ *
+ * @param int $fid_current
+ *   The FID of the current file to delete all backup associations to.
+ *
+ * @return int
+ *   The number of association records removed.
+ */
+function convertfile_db_conversion_delete_backups($fid_current) {
+  $num_deleted = 0;
+
+  if ($records = convertfile_db_conversion_get_backups($fid_current)) {
+    foreach ($record as $cid => $fid) {
+      $num_deleted += convertfile_db_conversion_delete($cid);
+    }
+  }
+
+  return $num_deleted;
+}
+
+/**
  * Determine if file is a backup.
  *
  * @param int $backup_fid
@@ -141,4 +162,32 @@ function convertfile_db_conversion_is_backup($fid_backup) {
     ->fetchAssoc();
 
   return isset($record['fid_current']) ? $record['fid_current'] : 0;
+}
+
+/**
+ * Get all backup files associated with file.
+ *
+ * @param int $fid_current
+ *   FID for the current file.
+ *
+ * @return array|bool
+ *   Array of FIDs which are backups to the current file, or NULL if none.
+ */
+function convertfile_db_conversion_get_backups($fid_current) {
+  $backups = array();
+
+  $records = db_select(CONVERTFILE_DB_CONVERSION, 'c')
+    ->fields('c')
+    ->condition('fid_current', $fid_current)
+    ->execute()
+    ->fetchAll();
+
+  if ($records) {
+    $backups = array();
+    foreach($records as $record) {
+      $backups[$record->cid] = $record->fid_backup;
+    }
+  }
+
+  return (!empty($backups)) ? $backups : NULL;
 }

@@ -368,11 +368,17 @@ function convertfile_validate_conversion($file, $instance) {
 
     // Save original file.
     $original_file = clone $file;
+    // File already exists.
     if (isset($original_file->fid)) {
       $dir = drupal_dirname($file->uri);
       $file->convertfile['backup'] = file_copy($file, $dir . $file->filename, FILE_EXISTS_RENAME);
     }
+    // File has just been uploaded.
     else {
+      // Why is this not moving the file to the destination?
+      copy($original_file->uri, $original_file->destination);
+      $original_file->uri = $original_file->destination;
+      unset($original_file->destination);
       file_save($original_file);
       if (isset($original_file->fid)) {
         $file->convertfile['backup'] = $original_file;
@@ -499,13 +505,61 @@ function convertfile_help($path, $arg) {
 
 /**
  * Implements hook_file_presave().
+ *
+ * File will have an FID if it already exists (being updated), or it may have
+ * no FID if it has just been uploaded.
  */
-function convertfile_file_update($file) {
+function convertfile_file_insert($file) {
   // Create new conversion entry.
-  if (isset($file->convertfile['backup'])) {
+  if (isset($file->convertfile['backup']) && isset($file->fid)) {
     // Have not thought out why this update is being called twice, but it is.
     if (!convertfile_db_conversion_is_backup($file->convertfile['backup']->fid)) {
       convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid);
+    }
+  }
+}
+
+/**
+ * Implements hook_file_update().
+ *
+ * Change the status of all backups to match current file status.
+ */
+function convertfile_file_update($file) {
+  // Create new conversion entry.
+  if (isset($file->convertfile['backup']) && isset($file->fid)) {
+    // Have not thought out why this update is being called twice, but it is.
+    if (!convertfile_db_conversion_is_backup($file->convertfile['backup']->fid)) {
+      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid);
+    }
+  }
+
+  // Update a conversion entry status.
+  if (isset($file->fid)) {
+    if ($fids = convertfile_db_conversion_get_backups($file->fid)) {
+      foreach ($fids as $fid) {
+        if ($bfile = file_load($fid)) {
+          $bfile->status = $file->status;
+          file_save($bfile);
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_file_delete().
+ *
+ * Delete all the backups of a file when it is removed.
+ */
+function convertfile_file_delete($file) {
+  if (isset($file->fid)) {
+    if ($cids = convertfile_db_conversion_get_backups($file->fid)) {
+      foreach ($cids as $cid => $fid) {
+        if ($file = file_load($fid)) {
+          file_delete($file);
+          convertfile_db_conversion_delete($cid);
+        }
+      }
     }
   }
 }
