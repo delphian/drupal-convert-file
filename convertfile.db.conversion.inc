@@ -5,7 +5,7 @@
  * Interface with the databse. Recording and retrieving conversion records.
  */
 
-define(CONVERTFILE_DB_CONVERSION, 'convertfile_conversion');
+define('CONVERTFILE_DB_CONVERSION', 'convertfile_conversion');
 
 /**
  * Define the schema for the conversion table.
@@ -20,7 +20,7 @@ function convertfile_db_conversion_schema() {
         'description' => 'The primary identifier for a conversion.',
         'type' => 'serial',
         'unsigned' => TRUE,
-        'not null' => TRUE
+        'not null' => TRUE,
       ),
       'fid_backup' => array(
         'description' => 'A previous version of the file.',
@@ -40,13 +40,11 @@ function convertfile_db_conversion_schema() {
         'description' => 'The Unix timestamp when the conversion was created.',
         'type' => 'int',
         'not null' => TRUE,
-        'default' => 0),
+        'default' => 0
       ),
+    ),
     'indexes' => array(
       'fid_current' => array('fid_current'),
-    ),
-    'unique keys' => array(
-      'fid_backup_fid_current' => array('fid_backup', 'fid_current'),
     ),
     'primary key' => array('cid'),
   );
@@ -124,4 +122,23 @@ function convertfile_db_conversion_delete($cid) {
     ->execute();
   
   return ($num_deleted) ? TRUE : FALSE;
+}
+
+/**
+ * Determine if a backup already exists.
+ *
+ * @param int $backup_fid
+ *   FID for the backup file.
+ *
+ * @return int
+ *   0 if file is not used as a backup, FID for current file otherwise.
+ */
+function convertfile_db_conversion_is_backup($fid_backup) {
+  $record = db_select(CONVERTFILE_DB_CONVERSION, 'c')
+    ->fields('c')
+    ->condition('fid_backup', $fid_backup)
+    ->execute()
+    ->fetchAssoc();
+
+  return isset($record['fid_current']) ? $record['fid_current'] : 0;
 }

@@ -9,13 +9,12 @@
  * variables when module is uninstalled.
  */
 
+require_once('convertfile.db.conversion.inc');
+
 /**
  * Implements hook_enable().
  */
 function convertfile_enable() {
-  // Install the database schema.
-  module_load_include('inc', 'convertfile', 'convertfile.db.conversion');
-  drupal_install_schema(CONVERTFILE_DB_CONVERSION);
   // Generate a friendly message to inform the admin what to do next after
   // enabling the module.
   drupal_set_message(t('Please configure the module at') . ' <a href="/admin/config/convertfile/settings">/admin/config/convertfile/settings</a>', 'status');
@@ -25,13 +24,10 @@ function convertfile_enable() {
  * Implements hook_uninstall().
  */
 function convertfile_uninstall() {
-  // Uninstall the database schema.
-  module_load_include('inc', 'convertfile', 'convertfile.db.conversion');
-  drupal_uninstall_schema(CONVERTFILE_DB_CONVERSION);
   // Get module variables
   $results = db_query("SELECT v.name FROM {variable} AS v WHERE v.name LIKE '%s%%'", 'convertfile_');
   // Remove variables
-  while ($row = db_fetch_array($results)) {
+  while ($row = $results->fetchAssoc()) {
     variable_del($row['name']);
   }  
 }
@@ -40,7 +36,6 @@ function convertfile_uninstall() {
  * Implements hook_schema().
  */
 function convertfile_schema() {
-  module_load_include('inc', 'convertfile', 'convertfile.db.conversion');
   $schema = convertfile_db_conversion_schema();
 
   return $schema;

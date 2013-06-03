@@ -5,6 +5,8 @@
  * Automatically convert saved files to a different format.
  */
 
+require_once('convertfile.db.conversion.inc');
+
 /**
  * Implements of hook_menu().
  */
@@ -353,6 +355,8 @@ function convertfile_validate_conversion($file, $instance) {
   $settings = $instance['widget']['settings'];
 
   // Save original information for any checks done after conversion is over.
+  $file->convertfile = array();
+  $file->convertfile['original'] = clone $file;
   $file->convertfile_original = clone $file;
 
   $info = convertfile_collect_info();
@@ -362,6 +366,19 @@ function convertfile_validate_conversion($file, $instance) {
     $name = $info[$settings['convertfile_provider']]['name'];
     $function = isset($info[$settings['convertfile_provider']]['callback']) ?
       $info[$settings['convertfile_provider']]['callback'] : NULL;
+
+    // Save original file.
+    $original_file = clone $file;
+    if (isset($original_file->fid)) {
+      $dir = drupal_dirname($file->uri);
+      $file->convertfile['backup'] = file_copy($file, $dir . $file->filename, FILE_EXISTS_RENAME);
+    }
+    else {
+      file_save($original_file);
+      if (isset($original_file->fid)) {
+        $file->convertfile['backup'] = $original_file;
+      }
+    }
 
     if ($function && function_exists($function)) {
       // This is not intended for contributed code.
@@ -479,4 +496,17 @@ function convertfile_help($path, $arg) {
   }
 
   return (strlen($help)) ? $help : NULL;
+}
+
+/**
+ * Implements hook_file_presave().
+ */
+function convertfile_file_update($file) {
+  // Create new conversion entry.
+  if (isset($file->convertfile['backup'])) {
+    // Have not thought out why this update is being called twice, but it is.
+    if (!convertfile_db_conversion_is_backup($file->convertfile['backup']->fid)) {
+      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid);
+    }
+  }
 }
