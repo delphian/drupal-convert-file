@@ -125,7 +125,7 @@ function convertfile_db_conversion_delete($cid) {
 }
 
 /**
- * Determine if a backup already exists.
+ * Determine if file is a backup.
  *
  * @param int $backup_fid
  *   FID for the backup file.
