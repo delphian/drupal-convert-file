@@ -655,3 +655,37 @@ function convertfile_file_delete($file) {
     }
   }
 }
+
+/**
+ * Implements hook_field_formatter_info().
+ *
+ * Create a custom field formatter. This may be selected uner the manage
+ * display tab when editing an entity structure.
+ */
+function convertfile_field_formatter_info() {
+  return array(
+    'convertfile_file_default' => array(
+      'label' => t('Convert File Generic file'),
+      'field types' => array('file'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_view().
+ *
+ * @see convertfile_field_formatter_info()
+ */
+function convertfile_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+
+  if ($display['type'] == 'convertfile_file_default') {
+    foreach ($items as $delta => $item) {
+      $element[$delta] = array(
+        '#theme' => 'file_link',
+        '#file' => (object) $item,
+      );
+    }
+  }
+
+  return $element;
+}
