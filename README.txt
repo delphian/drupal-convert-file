@@ -41,7 +41,7 @@ directory:
 
 Enable modules:
 
-1. `drush en convertfile cf_googledrive cf_convertfile -y`
+1. `drush en convertfile cf_googledrive cf_convertfile cf_imagemagick -y`
 
 Create a new file field on a piece of content and attach the `Convert File`
 widget:
