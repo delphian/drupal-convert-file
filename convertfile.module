@@ -6,6 +6,7 @@
  */
 
 require_once('convertfile.db.conversion.inc');
+require_once('convertfile.theme.inc');
 
 /**
  * Implements of hook_menu().
