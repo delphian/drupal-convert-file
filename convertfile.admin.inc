@@ -17,12 +17,31 @@
 function convertfile_config_form() {
 
   $form['test_conversion'] = array(
-    //'#type' => 'convertfile_file',
+    '#type' => 'fieldset',
+    '#title' => t('Convert files manually.'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['test_conversion']['fid_new'] = array(
     '#type' => 'managed_file',
-    '#title' => 'Test file conversion',
+    '#title' => t('Convert uploaded file.'),
     '#convertfile_provider' => 'cf_googledrive',
     '#convertfile_format' => 'pdf',
-    '#description' => 'Test out the Google Drive provider (to pdf).',
+    '#description' => t('Upload a file to convert.'),
+  );
+  $form['test_conversion']['fid_existing'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Convert existing file.'),
+    '#description' => t('FID of existing file to convert.'),
+  );
+  $form['test_conversion']['provider'] = array(
+    '#type' => 'select',
+    '#title' => 'Provider',
+    '#options' => convertfile_options_provider(),
+  );
+  $form['test_conversion']['format'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Format',
   );
 
   $form['installed_on'] = array(
@@ -90,9 +109,10 @@ function convertfile_config_form() {
  * Submit handler for admin config form.
  */
 function convertfile_config_form_submit($form, &$form_state) {
-  if (isset($form_state['values']['test_conversion'])) {
-    if ($file = file_load($form_state['values']['test_conversion'])) {
-      if (convertfile_convert_file($file, 'cf_googledrive', 'pdf')) {
+dpm($form_state['values']);
+  if (isset($form_state['values']['fid_existing'])) {
+    if ($file = file_load($form_state['values']['fid_existing'])) {
+      if (convertfile_convert_file($file, $form_state['values']['provider'], $form_state['values']['format'])) {
         $url = file_create_url($file->uri);
         drupal_set_message("File has been converted to: <a href='{$url}'>$url</a>" , 'status');
       }

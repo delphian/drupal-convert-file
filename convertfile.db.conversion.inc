@@ -22,6 +22,12 @@ function convertfile_db_conversion_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      'uid' => array(
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+        'description' => 'The {users}.uid who uploaded the file.',
+      ),
       'fid_backup' => array(
         'description' => 'A previous version of the file.',
         'type' => 'int',
@@ -36,8 +42,15 @@ function convertfile_db_conversion_schema() {
         'not null' => TRUE,
         'default' => 0
       ),
+      'provider' => array(
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'The provider that converted this file to next.',
+      ),
       'created' => array(
-        'description' => 'The Unix timestamp when the conversion was created.',
+        'description' => 'The Unix timestamp when a conversion was created from this file.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0
@@ -47,6 +60,12 @@ function convertfile_db_conversion_schema() {
       'fid_current' => array('fid_current'),
     ),
     'primary key' => array('cid'),
+    'foreign keys' => array(
+      'file_owner' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
   );
 
   return $schema;
@@ -61,11 +80,13 @@ function convertfile_db_conversion_schema() {
  *   The FID of the newly converted file.
  * @param int $uid
  *   User identification that owns these files.
+ * @param string $provider
+ *   The machine name of the provider that converted this file to next.
  *
  * @return int|bool
  *   The inserted CID (unique record id) on success, FALSE on failure.
  */
-function convertfile_db_convertion_insert($fid_backup, $fid_current, $uid) {
+function convertfile_db_convertion_insert($fid_backup, $fid_current, $uid, $provider = '') {
   $cid = FALSE;
 
   // Initializing $record array with values.
@@ -73,6 +94,7 @@ function convertfile_db_convertion_insert($fid_backup, $fid_current, $uid) {
     'fid_backup' => $fid_backup,
     'fid_current' => $fid_current,
     'uid' => $uid,
+    'provider' => $provider,
     'created' => time(),
   );
   // Inserting $record (data) into the database. Here $table variable contains the name of the table.

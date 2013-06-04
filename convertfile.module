@@ -293,6 +293,22 @@ function convertfile_field_widget_form(&$form, &$form_state, $field, $instance, 
 }
 
 /**
+ * Create associative array keyed by provider machine name and valued with
+ * provider name.
+ */
+function convertfile_options_provider() {
+  // Compile array of all file conversion providers.
+  $options = array('none' => '- None -');
+  if ($results = convertfile_collect_info()) {
+    foreach($results as $key => $result) {
+      $options[$key] = $result['name'];
+    }
+  }
+
+  return $options;
+}
+
+/**
  * Programmatic wrapper for convertfile_validate_conversion().
  *
  * Call this function directly to perform a programmatically based conversion.
@@ -356,6 +372,7 @@ function convertfile_validate_conversion($file, $instance) {
 
   // Save original information for any checks done after conversion is over.
   $file->convertfile = array();
+  $file->convertfile['instance'] = $instance;
   $file->convertfile['original'] = clone $file;
 
   $info = convertfile_collect_info();
@@ -514,7 +531,8 @@ function convertfile_file_insert($file) {
   if (isset($file->convertfile['backup']) && isset($file->fid)) {
     // Have not thought out why this update is being called twice, but it is.
     if (!convertfile_db_conversion_is_backup($file->convertfile['backup']->fid)) {
-      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid);
+      $provider = $file->convertfile['instance']['widget']['settings']['convertfile_provider'];
+      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $provider);
     }
   }
 }
@@ -529,7 +547,8 @@ function convertfile_file_update($file) {
   if (isset($file->convertfile['backup']) && isset($file->fid)) {
     // Have not thought out why this update is being called twice, but it is.
     if (!convertfile_db_conversion_is_backup($file->convertfile['backup']->fid)) {
-      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid);
+      $provider = $file->convertfile['instance']['widget']['settings']['convertfile_provider'];
+      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $provider);
     }
   }
 
