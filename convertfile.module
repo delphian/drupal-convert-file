@@ -169,6 +169,53 @@ function convertfile_element_info() {
 }
 
 /**
+ * Implements hook_element_info_alter().
+ *
+ * Attatch an extra process callback to managed_file element types for the
+ * purpose of adding a new Revert button if applicable.
+ */
+function convertfile_element_info_alter(&$type) {
+  $type['managed_file']['#process'][] = 'convertfile_managed_file_process';
+}
+
+/**
+ * Process function to expand the managed_file element type.
+ *
+ * Expands the file type to include Revert button.
+ *
+ * @see file_managed_file_process().
+ */
+function convertfile_managed_file_process($element, &$form_state, $form) {
+  $fid = isset($element['fid']['#value']) ? $element['fid']['#value'] : NULL;
+  if ($fid) {
+    if ($backups = convertfile_db_conversion_get_backups($fid)) {
+      foreach($backups as $backup) {
+        $file = file_load($backup);
+        $element['convertfile_list_backup_' . $backup] = array(
+          '#type' => 'submit',
+          '#value' => t('Revert to') . ' ' . $file->filename,
+          '#weight' => 20,
+          '#submit' => array(
+            'convertfile_managed_file_submit',
+          ),
+        );
+      }
+    }
+  }
+  return $element;
+}
+
+/**
+ * Form submission handler for revert button of managed_file elements.
+ *
+ * @see convertfile_managed_file_process().
+ * @see file_managed_file_submit().
+ */
+function convertfile_managed_file_submit($form, &$form_state) {
+  drupal_set_message('Feature not implemented yet', 'warning');
+}
+
+/**
  * The #value_callback for a convertfile_file type element.
  */
 function convertfile_managed_file_value(&$element, $input = FALSE, $form_state = NULL) {
