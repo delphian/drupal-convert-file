@@ -31,7 +31,7 @@ function cf_convertapi_uninstall() {
   // Get module variables
   $results = db_query("SELECT v.name FROM {variable} AS v WHERE v.name LIKE '%s%%'", 'cf_convertapi_');
   // Remove variables
-  while ($row = db_fetch_array($results)) {
+  while ($row = $results->fetchAssoc()) {
     variable_del($row['name']);
   }    
 }

@@ -681,7 +681,7 @@ function convertfile_field_formatter_view($entity_type, $entity, $field, $instan
   if ($display['type'] == 'convertfile_file_default') {
     foreach ($items as $delta => $item) {
       $element[$delta] = array(
-        '#theme' => 'file_link',
+        '#theme' => 'convertfile_link',
         '#file' => (object) $item,
       );
     }
@@ -689,3 +689,4 @@ function convertfile_field_formatter_view($entity_type, $entity, $field, $instan
 
   return $element;
 }
+
