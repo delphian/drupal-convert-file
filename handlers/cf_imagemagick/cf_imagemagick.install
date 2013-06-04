@@ -6,6 +6,14 @@
  *
  * Post a drupal message each time the module is enabled. Cleanup old
  * variables when module is uninstalled.
+ *
+ * `brew install ghostscript`
+ * `brew install ImageMagic --with-ghostscript`
+ * `pecl install imagick`
+ * `vi /Applications/MAMP/Library/bin/envvars` # remove sandbox, comment out DYLD_LIBRARY_PATH
+ *
+ * @see http://stackoverflow.com/questions/11413249/cant-install-ghostscript-in-imagemagick
+ * @see http://stackoverflow.com/questions/588918/imagemagick-imagick-convert-pdf-to-jpg-using-native-php-api
  */
 
 /**

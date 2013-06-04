@@ -12,7 +12,7 @@ function cf_imagemagick_default_rules_configuration() {
   $configs = array();
 
   // Convert files to PDF.
-  $rule = '{ "cf_imagemagick_convert_to_png" : {
+  $rule = '{ "rules_cf_imagemagick_png" : {
     "LABEL" : "CF ImageMagick convert to PNG",
     "PLUGIN" : "reaction rule",
     "TAGS" : [ "convertfile", "imagemagick", "png" ],
@@ -26,14 +26,10 @@ function cf_imagemagick_default_rules_configuration() {
       },
       { "convertfile_condition_format" : {
           "instance" : [ "instance" ],
-          "format" : { "value" : { "pdf" : "pdf" } }
+          "format" : { "value" : { "png" : "png" } }
         }
       },
-      { "OR" : [
-          { "convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "pdf" } },
-          { "convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "jpg" } },
-        ]
-      }
+      { "convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "pdf" } }
     ],
     "DO" : [
       { "cf_imagemagick_png" : { "file" : [ "file" ], "instance" : [ "instance" ] } }

@@ -47,7 +47,7 @@ function cf_imagemagick_rules_action_info() {
 function cf_imagemagick_action_png($file, $instance) {
   $report = FALSE;
 
-  $report = cf_imagemagick_action_common($file, $instance, $format, $extension);
+  $report = cf_imagemagick_action_common($file, $instance, 'image/png', 'png');
 
   return $report;
 }
@@ -78,11 +78,23 @@ function cf_imagemagick_action_common($file, $instance, $format, $extension) {
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
   $base = pathinfo($file->filename, PATHINFO_FILENAME);
   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
+  $im = NULL;
 
   if (class_exists('Imagick')) {
-    $data = '';
-    $fp = fopen($file->uri, "wbx");
-    if (fwrite($fp, $data)) {
+    try {
+      $im = new Imagick(drupal_realpath($file->uri));
+      $im->setImageColorspace(255); 
+      $im->setResolution(300, 300);
+      $im->setCompressionQuality(95); 
+      $im->setImageFormat('png'); 
+      $write_success = $im->writeImage(drupal_realpath($file->uri));
+      $im->clear(); 
+      $im->destroy();
+    } 
+    catch (Exception $e) {
+      $file->convertfile['error'] = $e->getMessage();
+    }
+    if ($write_success) {
       $ext_new = $extension;
       $file->filename = $base . '.' . $ext . '.' . $ext_new;
       $file->filesize = filesize($file->uri);
@@ -94,10 +106,10 @@ function cf_imagemagick_action_common($file, $instance, $format, $extension) {
       $report = TRUE;
     }
     else {
-      $file->convertfile['error'] = 'Could not write file to disk.';
+      //$file->convertfile['error'] = 'Could not write file to disk.';
     }
-    }
-  } else {
+  } 
+  else {
     $file->convertfile['error'] = 'Could not detect ImageMagick PHP extension.';
   }
 

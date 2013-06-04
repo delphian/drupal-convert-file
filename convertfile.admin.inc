@@ -125,10 +125,11 @@ function convertfile_ajax_format_callback($form, &$form_state) {
  * Submit handler for admin config form.
  */
 function convertfile_config_form_submit($form, &$form_state) {
-  $fid = isset($form_state['values']['fid_existing']) ? $form_state['values']['fid_existing'] : NULL;
-  $fid = isset($form_state['values']['fid_new']) ? $form_state['values']['fid_new'] : $fid;
-  $provider = isset($form_state['values']['provider']) ? $form_state['values']['provider'] : NULL;
-  $format = isset($form_state['values']['format']) ? $form_state['values']['format'] : NULL;
+  $values = $form_state['values'];
+  $fid = (isset($values['fid_existing']) && $values['fid_existing']) ? $values['fid_existing'] : NULL;
+  $fid = (isset($values['fid_new']) && $values['fid_new']) ? $values['fid_new'] : $fid;
+  $provider = isset($values['provider']) ? $values['provider'] : NULL;
+  $format = isset($values['format']) ? $values['format'] : NULL;
 
   if ($fid && $file = file_load($fid)) {
     if (convertfile_convert_file($file, $provider, $format)) {
