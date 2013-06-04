@@ -403,7 +403,7 @@ function convertfile_validate_conversion($file, $instance) {
     $function = isset($info[$settings['convertfile_provider']]['callback']) ?
       $info[$settings['convertfile_provider']]['callback'] : NULL;
 
-    // Save original file.
+    // Save original file. @todo what if the conversion below via rules fails???
     $original_file = clone $file;
     // File already exists.
     if (isset($original_file->fid)) {
@@ -412,7 +412,6 @@ function convertfile_validate_conversion($file, $instance) {
     }
     // File has just been uploaded.
     else {
-      // Why is this not moving the file to the destination?
       copy($original_file->uri, $original_file->destination);
       $original_file->uri = $original_file->destination;
       unset($original_file->destination);
@@ -434,6 +433,13 @@ function convertfile_validate_conversion($file, $instance) {
       if (isset($file->convertfile['error'])) {
         $report[] = "File conversion by {$name} rule failed.";
       }
+    }
+
+    // If a conversion has failed then remove the backup file.
+    if (isset($file->convertfile['error'])) {
+      // Remove the backup file.
+      file_delete($file->convertfile['backup']);
+      unset($file->convertfile['backup']);
     }
 
     // If file has a FID then it is not a new upload.

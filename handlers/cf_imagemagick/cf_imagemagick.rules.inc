@@ -83,32 +83,30 @@ function cf_imagemagick_action_common($file, $instance, $format, $extension) {
   if (class_exists('Imagick')) {
     try {
       $im = new Imagick(drupal_realpath($file->uri));
-      $im->setImageColorspace(255); 
-      $im->setResolution(300, 300);
       $im->setCompressionQuality(95); 
       $im->setImageFormat('png'); 
-      $write_success = $im->writeImage(drupal_realpath($file->uri));
+      // @see http://php.net/manual/en/imagick.writeimage.php
+      if (file_put_contents($file->uri, $im) !== FALSE) {
+        $ext_new = $extension;
+        $file->filename = $base . '.' . $ext . '.' . $ext_new;
+        $file->filesize = filesize($file->uri);
+        $file->filemime = file_get_mimetype($file->filename);
+        // We only need to update the destination if this is a new upload.
+        if (!isset($file->fid)) {
+          $file->destination = $file->destination . '.' . $ext_new;
+        }
+        $report = TRUE;
+      }
+      else {
+        $file->convertfile['error'] = 'Could not write file to disk.';
+      }
       $im->clear(); 
       $im->destroy();
     } 
     catch (Exception $e) {
       $file->convertfile['error'] = $e->getMessage();
     }
-    if ($write_success) {
-      $ext_new = $extension;
-      $file->filename = $base . '.' . $ext . '.' . $ext_new;
-      $file->filesize = filesize($file->uri);
-      $file->filemime = file_get_mimetype($file->filename);
-      // We only need to update the destination if this is a new upload.
-      if (!isset($file->fid)) {
-        $file->destination = $file->destination . '.' . $ext_new;
-      }
-      $report = TRUE;
-    }
-    else {
-      //$file->convertfile['error'] = 'Could not write file to disk.';
-    }
-  } 
+  }
   else {
     $file->convertfile['error'] = 'Could not detect ImageMagick PHP extension.';
   }
