@@ -1,0 +1,7 @@
+name = Convert File Provider ImageMagick
+description = "Use ImageMagick to convert files."
+core = 7.x
+package = Convert File
+configure = /admin/config/convertfile/settings/handler/imagemagick
+
+dependencies[] = convertfile

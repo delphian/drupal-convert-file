@@ -1,0 +1,65 @@
+<?php
+
+/**
+ * @file
+ * File conversion provided by ImageMagick PHP extension.
+ */
+
+/**
+ * Implements of hook_menu().
+ */
+function cf_imagemagick_menu() {
+  // Provide a page to handle watchdog error messages.
+  $items['admin/config/convertfile/settings/handler/imagemagick'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'ImageMagick',
+    'description' => 'File conversion provided by ImageMagick.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cf_imagemagick_form'),
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'cf_imagemagick.admin.inc',
+    'file path' => drupal_get_path('module', 'cf_imagemagick'),
+    'weight' => 40,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_convertfile_info().
+ *
+ * Register our provider and formats with convertfile module.
+ */
+function cf_imagemagick_convertfile_info() {
+  return array(
+    'cf_imagemagick' => array(
+      'name' => 'ImageMagick',
+      'types' => array(
+        'png' => '.png (image/png)',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_help()
+ */
+function cf_imagemagick_help($path, $arg) {
+  // If help is empty at end of function then NULL will be returned.
+  $help = '';
+
+  // Only use help if it is is still being requested.
+  if (variable_get('cf_imagemagick_help', FALSE)) {
+    if ($path == 'admin/config/convertfile/settings/handler/imagemagick') {
+
+      // Helper text if ImageMagick PHP extension is missing.
+      if (!class_exists('Imagick')) {
+        $help .= '' .
+          '<p>This provider requires the ImageMagick PHP extension to be installed.</p>';
+      }
+
+    }
+  }
+
+  return (strlen($help)) ? $help : NULL;
+}
