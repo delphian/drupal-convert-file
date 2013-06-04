@@ -19,10 +19,12 @@ the actual current file.
 
 ### Default providers ###
 
-Two default providers come with the module: `Convert File` and `Google Drive`.
-Convert File will gzip an uploaded file, while Google Drive will convert the
-file into pdf or txt formats. These providers are not active by default and must be
-enabled via the modules page.
+Three default providers come with the module: `Convert File`, `Google Drive`,
+and `ImageMagick`. Convert File will gzip an uploaded file, while Google Drive will
+convert the file into pdf or txt formats. ImageMagic can be used to convert pdf
+to images. These providers are not active by default and must be
+enabled via the modules page. ImageMagic is only available if the host has enabled
+the imagick extension (https://github.com/delphian/drupal-convert-file/wiki/Installing-ImageMagic-on-Mac-OSX-for-PHP)
 
 ### Installation instructions with drush ###
 
