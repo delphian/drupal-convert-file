@@ -6,7 +6,10 @@
 function convertfile_theme() {
   return array(
     'convertfile_link' => array(
-      'variables' => array('file' => NULL),
+      'variables' => array(
+        'file' => NULL,
+        'icon_directory' => NULL,
+      ),
     ),
   );
 }
