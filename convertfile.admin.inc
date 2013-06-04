@@ -130,7 +130,6 @@ function convertfile_config_form_submit($form, &$form_state) {
   $provider = isset($form_state['values']['provider']) ? $form_state['values']['provider'] : NULL;
   $format = isset($form_state['values']['format']) ? $form_state['values']['format'] : NULL;
 
-dpm(array($fid, $provider, $format));
   if ($fid && $file = file_load($fid)) {
     if (convertfile_convert_file($file, $provider, $format)) {
       $url = file_create_url($file->uri);
