@@ -14,8 +14,8 @@
  *
  * @see rules_admin_reaction_overview()
  */
-function convertfile_config_form() {
-
+function convertfile_config_form($form, &$form_state) {
+  $provider = isset($form_state['values']['provider']) ? $form_state['values']['provider'] : NULL;
   $form['test_conversion'] = array(
     '#type' => 'fieldset',
     '#title' => t('Convert files manually.'),
@@ -38,10 +38,19 @@ function convertfile_config_form() {
     '#type' => 'select',
     '#title' => 'Provider',
     '#options' => convertfile_options_provider(),
+    '#ajax' => array(
+      'callback' => 'convertfile_ajax_format_callback',
+      'wrapper' => 'format-div',
+      'method' => 'replace',
+      'effect' => 'fade',
+    ),    
   );
   $form['test_conversion']['format'] = array(
-    '#type' => 'textfield',
+    '#type' => 'select',
     '#title' => 'Format',
+    '#options' => convertfile_options_format($provider),
+    '#prefix' => '<div id="format-div">',
+    '#suffix' => '</div>',
   );
 
   $form['installed_on'] = array(
@@ -106,16 +115,26 @@ function convertfile_config_form() {
 }
 
 /**
+ * AJAX callback constructing provider formats.
+ */
+function convertfile_ajax_format_callback($form, &$form_state) {
+  return $form['test_conversion']['format'];
+}
+
+/**
  * Submit handler for admin config form.
  */
 function convertfile_config_form_submit($form, &$form_state) {
-dpm($form_state['values']);
-  if (isset($form_state['values']['fid_existing'])) {
-    if ($file = file_load($form_state['values']['fid_existing'])) {
-      if (convertfile_convert_file($file, $form_state['values']['provider'], $form_state['values']['format'])) {
-        $url = file_create_url($file->uri);
-        drupal_set_message("File has been converted to: <a href='{$url}'>$url</a>" , 'status');
-      }
+  $fid = isset($form_state['values']['fid_existing']) ? $form_state['values']['fid_existing'] : NULL;
+  $fid = isset($form_state['values']['fid_new']) ? $form_state['values']['fid_new'] : $fid;
+  $provider = isset($form_state['values']['provider']) ? $form_state['values']['provider'] : NULL;
+  $format = isset($form_state['values']['format']) ? $form_state['values']['format'] : NULL;
+
+dpm(array($fid, $provider, $format));
+  if ($fid && $file = file_load($fid)) {
+    if (convertfile_convert_file($file, $provider, $format)) {
+      $url = file_create_url($file->uri);
+      drupal_set_message("File has been converted to: <a href='{$url}'>$url</a>" , 'status');
     }
   }
 

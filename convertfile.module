@@ -309,6 +309,26 @@ function convertfile_options_provider() {
 }
 
 /**
+ * Create associative array keyed by format machine name and valued with
+ * format name.
+ */
+function convertfile_options_format($provider_mn = NULL) {
+  // Compile array of all file conversion format.
+  $options = array('none' => '- None -');
+  if ($results = convertfile_collect_info()) {
+    foreach($results as $key => $provider) {
+      if (!$provider || ($key == $provider_mn)) {
+        foreach($provider['types'] as $format_mn => $format_name) {
+          $options[$format_mn] = $format_name;
+        }
+      }
+    }
+  }
+
+  return $options;
+}
+
+/**
  * Programmatic wrapper for convertfile_validate_conversion().
  *
  * Call this function directly to perform a programmatically based conversion.
