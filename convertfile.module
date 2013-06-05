@@ -187,6 +187,18 @@ function convertfile_element_info_alter(&$type) {
  * @see file_managed_file_process().
  */
 function convertfile_managed_file_process($element, &$form_state, $form) {
+  $provider = NULL;
+  if (isset($form_state['input']['_triggering_element_name'])) {
+    preg_match_all('/([^\[\]]+)/', $form_state['input']['_triggering_element_name'], $matches);
+    $matches = $matches[0];
+    $provider = $form_state['values'];
+    foreach ($matches as $match) {
+      if (isset($provider[$match])) {
+        $provider = $provider[$match];
+      }
+    }
+  }
+
   $fid = isset($element['fid']['#value']) ? $element['fid']['#value'] : NULL;
   if ($fid) {
     if ($backups = convertfile_db_conversion_get_backups($fid)) {
@@ -195,15 +207,55 @@ function convertfile_managed_file_process($element, &$form_state, $form) {
         $element['convertfile_list_backup_' . $backup] = array(
           '#type' => 'submit',
           '#value' => t('Revert to') . ' ' . $file->filename,
-          '#weight' => 20,
+          '#weight' => 18,
           '#submit' => array(
             'convertfile_managed_file_submit',
           ),
         );
       }
     }
+    $element['convertfile_provider'] = array(
+      '#type' => 'select',
+      '#title' => t('Provider'),
+      '#options' => convertfile_options_provider(),
+      '#weight' => 20,
+      '#ajax' => array(
+        'callback' => 'convertfile_ajax_managed_file_process_callback',
+        'wrapper' => 'convertfile-format-div',
+        'method' => 'replace',
+        'effect' => 'fade',
+      ),
+    );
+    $element['convertfile_format'] = array(
+      '#type' => 'select',
+      '#title' => 'Format',
+      '#options' => convertfile_options_format($provider),
+      '#prefix' => '<div id="convertfile-format-div">',
+      '#suffix' => '</div>',
+      '#weight' => 24,
+    );
+
   }
   return $element;
+}
+
+/**
+ * AJAX callback to select available formats based on provider.
+ *
+ * @see convertfile_managed_file_process()
+ */
+function convertfile_ajax_managed_file_process_callback($form, &$form_state) {
+  $element = NULL;
+  if (isset($form_state['triggering_element']['#array_parents'])) {
+    $element = $form;
+    foreach ($form_state['triggering_element']['#array_parents'] as $match) {
+      if (strval($match) != 'convertfile_provider') {
+        $element = $element[$match];
+      }
+    }
+  }
+
+  return $element['convertfile_format'];
 }
 
 /**
@@ -691,3 +743,43 @@ function convertfile_field_formatter_view($entity_type, $entity, $field, $instan
   return $element;
 }
 
+/**
+ * Implements hook_file_download().
+ *
+ * Allow the download is backup files even if they are in private directory.
+ *
+ * Will examine the database for files based on the uri. If the UID of the
+ * file record matches global $user, or the user is admin, then the
+ * download will be allowed.
+ *
+ * @param string $uri
+ *   The file URI prefaced with the private: schema.
+ *
+ * @return mixed
+ *   NULL if this module should not comment on this file. -1 If the file
+ *   is restricted, or an associative array if permission is granted:
+ *   - 'Content-Type': (string) The mime type of the file.
+ *
+ * @todo Add a role that can also be assigned permission to download.
+ */
+function convertfile_file_download($uri) {
+  global $user;
+  $permission = NULL;
+  $role = NULL;
+
+  if (variable_get('convertfile_private_downloads', FALSE)) {
+    $file = db_select('file_managed', 'f')
+      ->fields('f')
+      ->condition('f.uri', $uri)
+      ->execute()
+      ->fetchAssoc();
+
+    if ($file && isset($file['uid'])) {
+      if (($file['uid'] == $user->uid) || (user_access($role, $user))) {
+        $permission = array('Content-Type' => file_get_mimetype($uri));
+      }
+    }
+  }
+
+  return $permission;
+}

@@ -107,6 +107,13 @@ function convertfile_config_form($form, &$form_state) {
   $form['inactive']['#caption'] = t('Inactive rules');
   $form['inactive']['#empty'] = t('There are no inactive rules.');
 
+  $form['convertfile_private_downloads'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Private download.'),
+    '#description' => t('Enable the download of backup files even if they are in the private directory. There are security implications to this.'),
+    '#default_value' => variable_get('convertfile_private_downloads', 0),
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Update'),
@@ -137,6 +144,8 @@ function convertfile_config_form_submit($form, &$form_state) {
       drupal_set_message("File has been converted to: <a href='{$url}'>$url</a>" , 'status');
     }
   }
+
+  variable_set('convertfile_private_downloads', $values['convertfile_private_downloads']);
 
   drupal_set_message(t('Settings have been updated.'));
 }
