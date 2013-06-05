@@ -113,6 +113,12 @@ function convertfile_config_form($form, &$form_state) {
     '#description' => t('Enable the download of backup files even if they are in the private directory. There are security implications to this.'),
     '#default_value' => variable_get('convertfile_private_downloads', 0),
   );
+  $form['convertfile_inline_convert'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Inline convert.'),
+    '#description' => t('Enable convert options inline on each managed file field.'),
+    '#default_value' => variable_get('convertfile_inline_convert', 0),
+  );
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -146,6 +152,7 @@ function convertfile_config_form_submit($form, &$form_state) {
   }
 
   variable_set('convertfile_private_downloads', $values['convertfile_private_downloads']);
+  variable_set('convertfile_inline_convert', $values['convertfile_inline_convert']);
 
   drupal_set_message(t('Settings have been updated.'));
 }

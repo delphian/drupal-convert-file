@@ -205,40 +205,44 @@ function convertfile_managed_file_process($element, &$form_state, $form) {
         );
       }
     }
-    $element['convertfile_provider'] = array(
-      '#type' => 'select',
-      '#title' => t('Provider'),
-      '#options' => convertfile_options_provider(),
-      '#weight' => 22,
-      '#attached' => array(
-        'css' => array(drupal_get_path('module', 'convertfile') . '/css/convertfile.css'),
-      ),
-      '#ajax' => array(
-        'callback' => 'convertfile_ajax_managed_file_process_callback',
-        'wrapper' => 'convertfile-format-div',
-        'method' => 'replace',
-        'effect' => 'fade',
-      ),
-      '#prefix' => '<div class="convertfile-inline-convert">',
-    );
-    $element['convertfile_format'] = array(
-      '#type' => 'select',
-      '#title' => 'Format',
-      '#options' => convertfile_options_format($provider),
-      '#prefix' => '<div id="convertfile-format-div">',
-      '#suffix' => '</div>',
-      '#weight' => 24,
-    );
-    $element['convertfile_submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Convert'),
-      '#weight' => 26,
-      '#submit' => array(
-        'convertfile_managed_file_convert_submit',
-      ),
-      '#prefix' => '<div class="submit">',
-      '#suffix' => '</div></div>',
-    );
+
+    // Inline form element convert.
+    if (variable_get('convertfile_inline_convert', FALSE)) {
+      $element['convertfile_provider'] = array(
+        '#type' => 'select',
+        '#title' => t('Provider'),
+        '#options' => convertfile_options_provider(),
+        '#weight' => 22,
+        '#attached' => array(
+          'css' => array(drupal_get_path('module', 'convertfile') . '/css/convertfile.css'),
+        ),
+        '#ajax' => array(
+          'callback' => 'convertfile_ajax_managed_file_process_callback',
+          'wrapper' => 'convertfile-format-div',
+          'method' => 'replace',
+          'effect' => 'fade',
+        ),
+        '#prefix' => '<div class="convertfile-inline-convert">',
+      );
+      $element['convertfile_format'] = array(
+        '#type' => 'select',
+        '#title' => 'Format',
+        '#options' => convertfile_options_format($provider),
+        '#prefix' => '<div id="convertfile-format-div">',
+        '#suffix' => '</div>',
+        '#weight' => 24,
+      );
+      $element['convertfile_submit'] = array(
+        '#type' => 'submit',
+        '#value' => t('Convert'),
+        '#weight' => 26,
+        '#submit' => array(
+          'convertfile_managed_file_convert_submit',
+        ),
+        '#prefix' => '<div class="submit">',
+        '#suffix' => '</div></div>',
+      );
+    }
   }
 
   return $element;
@@ -746,6 +750,7 @@ function convertfile_field_formatter_info() {
  * @see convertfile_field_formatter_info()
  */
 function convertfile_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = NULL;
 
   if ($display['type'] == 'convertfile_file_default') {
     foreach ($items as $delta => $item) {
