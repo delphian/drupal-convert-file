@@ -114,8 +114,8 @@ function cf_googledrive_insert_file($service, $title, $description, $parentId, $
   $file = new Google_DriveFile();
   $file->setTitle($title);
   $file->setDescription($description);
-  // Force google to convert file, otherwise it will not.
-  // $file->setMimeType($mimeType);
+  // Setting mime type with .pdf may cancel conversion.
+  $file->setMimeType($mimeType);
 
   // Set the parent folder.
   if ($parentId != null) {
@@ -131,8 +131,8 @@ function cf_googledrive_insert_file($service, $title, $description, $parentId, $
     $createdFile = @$service->files->insert($file, array(
       'convert' => TRUE,
       'data' => $data,
-      // Force google to convert file, otherwise it will not.
-      // 'mimeType' => $mimeType,
+      // Setting mime type with .pdf may cancel conversion.
+      'mimeType' => $mimeType,
     ));
 
     return $createdFile;
