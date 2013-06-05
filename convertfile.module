@@ -210,12 +210,16 @@ function convertfile_managed_file_process($element, &$form_state, $form) {
       '#title' => t('Provider'),
       '#options' => convertfile_options_provider(),
       '#weight' => 22,
+      '#attached' => array(
+        'css' => array(drupal_get_path('module', 'convertfile') . '/css/convertfile.css'),
+      ),
       '#ajax' => array(
         'callback' => 'convertfile_ajax_managed_file_process_callback',
         'wrapper' => 'convertfile-format-div',
         'method' => 'replace',
         'effect' => 'fade',
       ),
+      '#prefix' => '<div class="convertfile-inline-convert">',
     );
     $element['convertfile_format'] = array(
       '#type' => 'select',
@@ -232,6 +236,8 @@ function convertfile_managed_file_process($element, &$form_state, $form) {
       '#submit' => array(
         'convertfile_managed_file_convert_submit',
       ),
+      '#prefix' => '<div class="submit">',
+      '#suffix' => '</div></div>',
     );
   }
 
