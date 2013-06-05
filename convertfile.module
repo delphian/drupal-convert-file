@@ -464,7 +464,7 @@ function convertfile_options_format($provider_mn = NULL) {
  *   TRUE on successful conversion, FALSE otherwise. See watchdog for error
  *   details.
  */
-function convertfile_convert_file($file, $provider, $format) {
+function convertfile_convert_file($file, $provider, $format, $extensions = NULL) {
   $report = FALSE;
 
   $file = (is_object($file)) ? $file : file_load($file);
@@ -474,6 +474,7 @@ function convertfile_convert_file($file, $provider, $format) {
         'settings' => array(
           'convertfile_provider' => $provider,
           'convertfile_format' => $format,
+          'convertfile_extensions' => $extensions,
         ),
       ),
     );
