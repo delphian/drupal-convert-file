@@ -187,19 +187,10 @@ function convertfile_element_info_alter(&$type) {
  * @see file_managed_file_process().
  */
 function convertfile_managed_file_process($element, &$form_state, $form) {
-  $provider = NULL;
-  if (isset($form_state['input']['_triggering_element_name'])) {
-    preg_match_all('/([^\[\]]+)/', $form_state['input']['_triggering_element_name'], $matches);
-    $matches = $matches[0];
-    $provider = $form_state['values'];
-    foreach ($matches as $match) {
-      if (isset($provider[$match])) {
-        $provider = $provider[$match];
-      }
-    }
-  }
-
+  $provider = isset($element['#value']['convertfile_provider']) ?
+    $element['#value']['convertfile_provider'] : NULL;
   $fid = isset($element['fid']['#value']) ? $element['fid']['#value'] : NULL;
+
   if ($fid) {
     if ($backups = convertfile_db_conversion_get_backups($fid)) {
       foreach($backups as $backup) {
@@ -218,7 +209,7 @@ function convertfile_managed_file_process($element, &$form_state, $form) {
       '#type' => 'select',
       '#title' => t('Provider'),
       '#options' => convertfile_options_provider(),
-      '#weight' => 20,
+      '#weight' => 22,
       '#ajax' => array(
         'callback' => 'convertfile_ajax_managed_file_process_callback',
         'wrapper' => 'convertfile-format-div',
@@ -234,8 +225,16 @@ function convertfile_managed_file_process($element, &$form_state, $form) {
       '#suffix' => '</div>',
       '#weight' => 24,
     );
-
+    $element['convertfile_submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Convert'),
+      '#weight' => 26,
+      '#submit' => array(
+        'convertfile_managed_file_convert_submit',
+      ),
+    );
   }
+
   return $element;
 }
 
@@ -265,7 +264,18 @@ function convertfile_ajax_managed_file_process_callback($form, &$form_state) {
  * @see file_managed_file_submit().
  */
 function convertfile_managed_file_submit($form, &$form_state) {
-  drupal_set_message('Feature not implemented yet', 'warning');
+  drupal_set_message('Revert feature not implemented yet', 'warning');
+}
+
+/**
+ * Form submission handler for converted a file which is already in an
+ * managed_file element.
+ *
+ * @see convertfile_managed_file_process().
+ * @see file_managed_file_submit().
+ */
+function convertfile_managed_file_convert_submit($form, &$form_state) {
+  drupal_set_message('Convert feature not implemented yet', 'warning');
 }
 
 /**
