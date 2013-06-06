@@ -10,9 +10,9 @@
 /**
  * Menu callback.
  *
- * Generate configuration settings page.
+ * Main configuration settings page for convertfile.
  *
- * @see rules_admin_reaction_overview()
+ * @see convertfile_menu()
  */
 function convertfile_config_form($form, &$form_state) {
   $provider = isset($form_state['values']['provider']) ? $form_state['values']['provider'] : NULL;
@@ -90,23 +90,7 @@ function convertfile_config_form($form, &$form_state) {
     '#markup' => $markup,
   );
 
-  // Show all of the active rules.
-  $conditions = array(
-    'plugin' => 'reaction rule', 
-    'active' => TRUE,
-    'tags' => array('convertfile'),
-  );
-  $base_path = 'admin/config/workflow/rules/reaction';
-  $options = array('show plugin' => FALSE, 'base path' => $base_path);
-  $form['active'] = rules_ui()->overviewTable($conditions, $options);
-  $form['active']['#caption'] = t('Active rules');
-  $form['active']['#empty'] = t('There are no active rules. <a href="!url">Add new rule</a>.', array('!url' => url('admin/config/workflow/rules/reaction/add')));
-  // Show all of the inactive rules.
-  $conditions['active'] = FALSE;
-  $form['inactive'] = rules_ui()->overviewTable($conditions, $options);
-  $form['inactive']['#caption'] = t('Inactive rules');
-  $form['inactive']['#empty'] = t('There are no inactive rules.');
-
+  // Settings.
   $form['convertfile_private_downloads'] = array(
     '#type' => 'checkbox',
     '#title' => t('Private download.'),
@@ -162,6 +146,37 @@ function convertfile_config_form_submit($form, &$form_state) {
   variable_set('convertfile_inline_revert', $values['convertfile_inline_revert']);
 
   drupal_set_message(t('Settings have been updated.'));
+}
+
+/**
+ * Menu callback.
+ *
+ * Display all active and inactive rules associated with convertfile.
+ *
+ * @see convertfile_menu()
+ * @see rules_admin_reaction_overview()
+ */
+function convertfile_rules_form($form, &$form_state) {
+
+  // Show all of the active rules.
+  $conditions = array(
+    'plugin' => 'reaction rule', 
+    'active' => TRUE,
+    'tags' => array('convertfile'),
+  );
+  $base_path = 'admin/config/workflow/rules/reaction';
+  $options = array('show plugin' => FALSE, 'base path' => $base_path);
+  $form['active'] = rules_ui()->overviewTable($conditions, $options);
+  $form['active']['#caption'] = t('Active rules');
+  $form['active']['#empty'] = t('There are no active rules. <a href="!url">Add new rule</a>.', array('!url' => url('admin/config/workflow/rules/reaction/add')));
+
+  // Show all of the inactive rules.
+  $conditions['active'] = FALSE;
+  $form['inactive'] = rules_ui()->overviewTable($conditions, $options);
+  $form['inactive']['#caption'] = t('Inactive rules');
+  $form['inactive']['#empty'] = t('There are no inactive rules.');
+
+  return $form;
 }
 
 /**

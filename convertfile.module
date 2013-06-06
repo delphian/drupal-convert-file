@@ -47,9 +47,22 @@ function convertfile_menu() {
     'access arguments' => array('administer convertfile settings'),
     'file' => 'convertfile.admin.inc',
     'file path' => drupal_get_path('module', 'convertfile'),
+    'weight' => 30,
+  );
+    // Provide a page to show all convertfile related rules.
+  $items['admin/config/convertfile/settings/rules'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Rules',
+    'description' => 'View all active and inactive rules related to convertfile.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('convertfile_rules_form'),
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'convertfile.admin.inc',
+    'file path' => drupal_get_path('module', 'convertfile'),
     'weight' => 20,
   );
-  // Provide a page to handle watchdog error messages.
+  // Provide a page to display all installed providers and their 
+  // configuration.
   $items['admin/config/convertfile/settings/handler'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'Providers',
@@ -59,7 +72,7 @@ function convertfile_menu() {
     'access arguments' => array('administer convertfile settings'),
     'file' => 'convertfile.admin.inc',
     'file path' => drupal_get_path('module', 'convertfile'),
-    'weight' => 30,
+    'weight' => 35,
   );
   $items['admin/config/convertfile/settings/handler/config'] = array(
     'type' => MENU_DEFAULT_LOCAL_TASK,
