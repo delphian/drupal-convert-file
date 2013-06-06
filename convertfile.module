@@ -781,7 +781,7 @@ function convertfile_help($path, $arg) {
     // Settings page only.
     if ($path == 'admin/config/convertfile/settings') {
       // Always reference the wiki.
-      $help .= '<p><a href="https://github.com/delphian/drupal-convert-file/wiki">Consult the wiki pages for help or to submit issues.</p>';
+      $help .= '<p><a href="https://github.com/delphian/drupal-convert-file/wiki">Consult the wiki pages for help or to submit issues</a>.</p>';
       // Help text if no widgets have been configured yet.
       $images = convertfile_find_widgets('convertfile_image');
       $files = convertfile_find_widgets('convertfile_file');

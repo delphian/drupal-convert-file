@@ -122,9 +122,12 @@ function cf_imagemagick_action_common($file, $instance, $format, $extension) {
 
   if (class_exists('Imagick')) {
     try {
-      $im = new Imagick(drupal_realpath($file->uri));
+      $im = new Imagick();
+      $im->readImage(drupal_realpath($file->uri));
       $im->setCompressionQuality(95);
-      $im->setImageFormat($extension); 
+      $im->resetIterator(); 
+      $im = $im->appendImages(TRUE);
+      $im->setImageFormat($extension);
       if (file_put_contents($file->uri, $im) !== FALSE) {
         $ext_new = $extension;
         $file->filename = $base . '.' . $ext . '.' . $ext_new;
