@@ -77,6 +77,9 @@ function convertfile_permission() {
     'administer convertfile settings' => array(
       'title' => t('Administer Convert File settings'),
     ),
+    'download private backup files' => array(
+      'title' => t('Download private backup files'),
+    ),
   );
 }
 
@@ -786,8 +789,8 @@ function convertfile_field_formatter_view($entity_type, $entity, $field, $instan
  */
 function convertfile_file_download($uri) {
   global $user;
-  $permission = NULL;
-  $role = NULL;
+  $access = NULL;
+  $permission = 'download private backup files';
 
   if (variable_get('convertfile_private_downloads', FALSE)) {
     $file = db_select('file_managed', 'f')
@@ -797,11 +800,11 @@ function convertfile_file_download($uri) {
       ->fetchAssoc();
 
     if ($file && isset($file['uid'])) {
-      if (($file['uid'] == $user->uid) || (user_access($role, $user))) {
-        $permission = array('Content-Type' => file_get_mimetype($uri));
+      if (($file['uid'] == $user->uid) || (user_access($permission, $user))) {
+        $access = array('Content-Type' => file_get_mimetype($uri));
       }
     }
   }
 
-  return $permission;
+  return $access;
 }
