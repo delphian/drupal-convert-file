@@ -670,11 +670,12 @@ function convertfile_help($path, $arg) {
   $help = '';
 
   // Settings page.
-  if ($path == 'admin/config/convertfile/settings') {
+  if ($path == 'admin/config/convertfile/settings/rules') {
     // Help text if rules_admin is not turned on.
     if (!module_exists('rules_admin')) {
       $help .= '<p><a href="/admin/modules">Rules UI</a> (rules_admin) ' . t('module must be enabled to edit or examine the details of rules.') . '</p>';
     }
+    $help .= '<p>[<a href="/admin/config/workflow/rules">Rules</a>] [<a href="/admin/config/workflow/rules/reaction/add">Add new rule</a>]</p>';
   }
 
   // Settings page and all children.

@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Rules related actions, events and conditions.
+ * Rules related actions, events and conditions for ImageMagick.
  */
 
 /**
@@ -24,6 +24,21 @@ function cf_imagemagick_rules_action_info() {
       ),
       'group' => t('Convert File'),
       'base' => 'cf_imagemagick_action_png',
+    ),
+    'cf_imagemagick_jpg' => array(
+      'label' => t('Convert file to .jpg (image/jpeg) using ImageMagick'),
+      'parameter' => array(
+        'file' => array(
+          'type' => 'file',
+          'label' => t('File to convert'),
+        ),
+        'instance' => array(
+          'type' => 'struct',
+          'label' => t('Field instance data'),
+        ),
+      ),
+      'group' => t('Convert File'),
+      'base' => 'cf_imagemagick_action_jpg',
     ),
   );
 }
@@ -48,6 +63,30 @@ function cf_imagemagick_action_png($file, $instance) {
   $report = FALSE;
 
   $report = cf_imagemagick_action_common($file, $instance, 'image/png', 'png');
+
+  return $report;
+}
+
+/**
+ * Rules action convert file to jpg format.
+ *
+ * @param stdClass $file
+ *   File object to convert.
+ * @param array $instance
+ *   Field instance that this file was submitted to.
+ *
+ * @return
+ *   TRUE on success, FALSE on failure. Also, sets property
+ *   $file->convertfile['error'] to a string containing an error message if
+ *   an error was encountered, otherwise properties absense means success.
+ *
+ * @see cf_convertfile_rules_action_info()
+ * @see convertfile_validate_conversion()
+ */
+function cf_imagemagick_action_jpg($file, $instance) {
+  $report = FALSE;
+
+  $report = cf_imagemagick_action_common($file, $instance, 'image/jpeg', 'jpg');
 
   return $report;
 }
