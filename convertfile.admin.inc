@@ -15,44 +15,6 @@
  * @see convertfile_menu()
  */
 function convertfile_config_form($form, &$form_state) {
-  $provider = isset($form_state['values']['provider']) ? $form_state['values']['provider'] : NULL;
-  $form['test_conversion'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Convert files manually.'),
-    '#collapsible' => TRUE,
-    '#collapsed' => TRUE,
-  );
-  $form['test_conversion']['fid_new'] = array(
-    '#type' => 'managed_file',
-    '#title' => t('Convert uploaded file.'),
-    '#convertfile_provider' => 'cf_googledrive',
-    '#convertfile_format' => 'pdf',
-    '#description' => t('Upload a file to convert.'),
-  );
-  $form['test_conversion']['fid_existing'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Convert existing file.'),
-    '#description' => t('FID of existing file to convert.'),
-  );
-  $form['test_conversion']['provider'] = array(
-    '#type' => 'select',
-    '#title' => 'Provider',
-    '#options' => convertfile_options_provider(),
-    '#ajax' => array(
-      'callback' => 'convertfile_ajax_format_callback',
-      'wrapper' => 'format-div',
-      'method' => 'replace',
-      'effect' => 'fade',
-    ),    
-  );
-  $form['test_conversion']['format'] = array(
-    '#type' => 'select',
-    '#title' => 'Format',
-    '#options' => convertfile_options_format($provider),
-    '#prefix' => '<div id="format-div">',
-    '#suffix' => '</div>',
-  );
-
   $form['installed_on'] = array(
     '#type' => 'fieldset',
     '#title' => 'Widgets assigned to fields',
@@ -124,16 +86,87 @@ function convertfile_config_form($form, &$form_state) {
 }
 
 /**
- * AJAX callback constructing provider formats.
+ * Submit handler for admin config form.
  */
-function convertfile_ajax_format_callback($form, &$form_state) {
+function convertfile_config_form_submit($form, &$form_state) {
+  $values = $form_state['values'];
+
+  variable_set('convertfile_private_downloads', $values['convertfile_private_downloads']);
+  variable_set('convertfile_inline_convert', $values['convertfile_inline_convert']);
+  variable_set('convertfile_inline_revert', $values['convertfile_inline_revert']);
+  if ($values['convertfile_help'] != variable_get('convertfile_help', FALSE)) {
+    drupal_set_message(t('Cache may need to be flushed to add or remove some helper text and links.'));
+  }
+  variable_set('convertfile_help', $values['convertfile_help']);
+
+  drupal_set_message(t('Settings have been updated.'));
+}
+
+/**
+ * Menu callback.
+ *
+ * Manual file conversion page.
+ *
+ * @see convertfile_menu()
+ */
+function convertfile_convert_form($form, &$form_state) {
+  $provider = isset($form_state['values']['provider']) ? $form_state['values']['provider'] : NULL;
+
+  $form['provider'] = array(
+    '#type' => 'select',
+    '#title' => t('Provider'),
+    '#options' => convertfile_options_provider(),
+    '#ajax' => array(
+      'callback' => 'convertfile_convert_form_ajax_callback',
+      'wrapper' => 'format-div',
+      'method' => 'replace',
+      'effect' => 'fade',
+    ),    
+  );
+  $form['format'] = array(
+    '#type' => 'select',
+    '#title' => t('Format'),
+    '#options' => convertfile_options_format($provider),
+    '#prefix' => '<div id="format-div">',
+    '#suffix' => '</div>',
+  );
+  $form['fid_new'] = array(
+    '#type' => 'managed_file',
+    '#title' => t('Uploaded file.'),
+    '#convertfile_provider' => 'cf_googledrive',
+    '#convertfile_format' => 'pdf',
+    '#description' => t('Upload a new file to convert.'),
+  );
+  $form['fid_existing'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Existing file.'),
+    '#description' => t('FID of existing file to convert.'),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Convert'),
+  );
+  return $form;
+}
+
+/**
+ * AJAX callback.
+ *
+ * Construct provider formats based on provider.
+ *
+ * @see convertfile_convert_form()
+ */
+function convertfile_convert_form_ajax_callback($form, &$form_state) {
   return $form['test_conversion']['format'];
 }
 
 /**
- * Submit handler for admin config form.
+ * Submit handler.
+ *
+ * @see convertfile_convert_form()
  */
-function convertfile_config_form_submit($form, &$form_state) {
+function convertfile_convert_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   $fid = (isset($values['fid_existing']) && $values['fid_existing']) ? $values['fid_existing'] : NULL;
   $fid = (isset($values['fid_new']) && $values['fid_new']) ? $values['fid_new'] : $fid;
@@ -149,16 +182,6 @@ function convertfile_config_form_submit($form, &$form_state) {
       drupal_set_message('Unable to convert file. See <a href="/admin/config/convertfile/settings/watchdog">logs</a> for detailed error.', 'warning');
     }
   }
-
-  variable_set('convertfile_private_downloads', $values['convertfile_private_downloads']);
-  variable_set('convertfile_inline_convert', $values['convertfile_inline_convert']);
-  variable_set('convertfile_inline_revert', $values['convertfile_inline_revert']);
-  if ($values['convertfile_help'] != variable_get('convertfile_help', FALSE)) {
-    drupal_set_message(t('Cache may need to be flushed to add or remove some helper text and links.'));
-  }
-  variable_set('convertfile_help', $values['convertfile_help']);
-
-  drupal_set_message(t('Settings have been updated.'));
 }
 
 /**

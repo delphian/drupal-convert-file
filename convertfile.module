@@ -61,6 +61,18 @@ function convertfile_menu() {
     'file path' => drupal_get_path('module', 'convertfile'),
     'weight' => 20,
   );
+  // Provide a page to show all convertfile related rules.
+  $items['admin/config/convertfile/settings/convert'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Convert',
+    'description' => 'Manually convert a file through the administrative interface.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('convertfile_convert_form'),
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'convertfile.admin.inc',
+    'file path' => drupal_get_path('module', 'convertfile'),
+    'weight' => 25,
+  );
   if (variable_get('convertfile_help', FALSE)) {
     // Redirect rules back to convertfile.
     $items['admin/config/workflow/rules/reaction/convertfile_back'] = array(
