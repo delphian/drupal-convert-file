@@ -145,6 +145,9 @@ function convertfile_config_form_submit($form, &$form_state) {
       $url = file_create_url($file->uri);
       drupal_set_message("File has been converted to: <a href='{$url}'>$url</a>" , 'status');
     }
+    else {
+      drupal_set_message('Unable to convert file. See <a href="/admin/config/convertfile/settings/watchdog">logs</a> for detailed error.', 'warning');
+    }
   }
 
   variable_set('convertfile_private_downloads', $values['convertfile_private_downloads']);

@@ -26,7 +26,7 @@ function cf_googledrive_rules_action_info() {
       'base' => 'cf_googledrive_action_pdf',
     ),
     'cf_googledrive_txt' => array(
-      'label' => t('Convert file to .txt (application/txt) using Google Drive'),
+      'label' => t('Convert file to .txt (text/plain) using Google Drive'),
       'parameter' => array(
         'file' => array(
           'type' => 'file',
@@ -39,6 +39,21 @@ function cf_googledrive_rules_action_info() {
       ),
       'group' => t('Convert File'),
       'base' => 'cf_googledrive_action_txt',
+    ),
+    'cf_googledrive_odt' => array(
+      'label' => t('Convert file to .odt (application/vnd.oasis.opendocument.text) using Google Drive'),
+      'parameter' => array(
+        'file' => array(
+          'type' => 'file',
+          'label' => t('File to convert'),
+        ),
+        'instance' => array(
+          'type' => 'struct',
+          'label' => t('Field instance data'),
+        ),
+      ),
+      'group' => t('Convert File'),
+      'base' => 'cf_googledrive_action_odt',
     ),
   );
 }
@@ -88,6 +103,31 @@ function cf_googledrive_action_txt($file, $instance) {
   $report = FALSE;
 
   $report = cf_googledrive_action_common($file, $instance, 'text/plain', 'txt');
+
+  return $report;
+}
+
+/**
+ * Rules action convert file to odt format.
+ *
+ * @param stdClass $file
+ *   File object to convert.
+ * @param array $instance
+ *   Field instance that this file was submitted to.
+ *
+ * @return
+ *   TRUE on success, FALSE on failure. Also, sets new property of 
+ *   c$file->convertfile['error'] to a string containing an error message 
+ *   if an error was encountered, otherwise properties absense means
+ *   success.
+ *
+ * @see cf_convertfile_rules_action_info()
+ * @see convertfile_validate_conversion()
+ */
+function cf_googledrive_action_odt($file, $instance) {
+  $report = FALSE;
+
+  $report = cf_googledrive_action_common($file, $instance, 'application/vnd.oasis.opendocument.text', 'odt');
 
   return $report;
 }
