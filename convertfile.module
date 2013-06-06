@@ -335,7 +335,7 @@ function convertfile_managed_file_process($element, &$form_state, $form) {
         '#value' => t('Convert'),
         '#weight' => 26,
         '#submit' => array(
-          'convertfile_managed_file_convert_submit',
+          'convertfile_inline_convert_submit',
         ),
         '#prefix' => '<div class="submit">',
         '#suffix' => '</div></div>',
@@ -382,8 +382,27 @@ function convertfile_managed_file_submit($form, &$form_state) {
  * @see convertfile_managed_file_process().
  * @see file_managed_file_submit().
  */
-function convertfile_managed_file_convert_submit($form, &$form_state) {
-  drupal_set_message('Convert feature not implemented yet', 'warning');
+function convertfile_inline_convert_submit($form, &$form_state) {
+  $element = NULL;
+  if (isset($form_state['triggering_element']['#array_parents'])) {
+    $element = $form_state['values'];
+    foreach ($form_state['triggering_element']['#array_parents'] as $match) {
+      if (strval($match) != 'convertfile_submit') {
+        $element = $element[$match];
+      }
+    }
+  }
+
+  $file = file_load($element['fid']);
+  $provider = $element['convertfile_provider'];
+  $format = $element['convertfile_format'];
+
+  if (convertfile_convert_file($file, $provider, $format, NULL)) {
+    drupal_set_message('File has been converted.', 'status');
+  }
+  else {
+    drupal_set_message('File could not be converted.', 'warning');
+  }
 }
 
 /**
