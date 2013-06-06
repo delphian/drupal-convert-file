@@ -49,7 +49,7 @@ function convertfile_menu() {
     'file path' => drupal_get_path('module', 'convertfile'),
     'weight' => 30,
   );
-    // Provide a page to show all convertfile related rules.
+  // Provide a page to show all convertfile related rules.
   $items['admin/config/convertfile/settings/rules'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'Rules',
@@ -60,6 +60,16 @@ function convertfile_menu() {
     'file' => 'convertfile.admin.inc',
     'file path' => drupal_get_path('module', 'convertfile'),
     'weight' => 20,
+  );
+  // Redirect rules back to convertfile.
+  $items['admin/config/workflow/rules/reaction/convertfile_back'] = array(
+    'type' => MENU_LOCAL_ACTION,
+    'title' => 'Back to Convert File',
+    'page callback' => 'convertfile_redirect_rules',
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'convertfile.admin.inc',
+    'file path' => drupal_get_path('module', 'convertfile'),
+    'weight' => 30,
   );
   // Provide a page to display all installed providers and their 
   // configuration.
@@ -80,6 +90,13 @@ function convertfile_menu() {
   );
 
   return $items;
+}
+
+/**
+ * Redirect back to convertfile rules from drupal rules.
+ */
+function convertfile_redirect_rules() {
+  drupal_goto('/admin/config/convertfile/settings/rules');
 }
 
 /**
