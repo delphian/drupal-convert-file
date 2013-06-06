@@ -161,6 +161,9 @@ function convertfile_permission() {
     'download private backup files' => array(
       'title' => t('Download private backup files'),
     ),
+    'convertfile use inline conversion' => array(
+      'title' => t('Use inline conversion form'),
+    ),
   );
 }
 
@@ -279,6 +282,7 @@ function convertfile_element_info_alter(&$type) {
  * @see file_managed_file_process()
  */
 function convertfile_managed_file_process($element, &$form_state, $form) {
+  global $user;
   $provider = isset($element['#value']['convertfile_provider']) ?
     $element['#value']['convertfile_provider'] : NULL;
   $fid = isset($element['fid']['#value']) ? $element['fid']['#value'] : NULL;
@@ -305,7 +309,8 @@ function convertfile_managed_file_process($element, &$form_state, $form) {
     }
 
     // Add inline convert options.
-    if (variable_get('convertfile_inline_convert', FALSE)) {
+    $permission = 'convertfile use inline conversion';
+    if (variable_get('convertfile_inline_convert', FALSE) && user_access($permission, $user)) {
       $element['convertfile_provider'] = array(
         '#type' => 'select',
         '#title' => t('Provider'),

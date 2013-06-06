@@ -158,7 +158,7 @@ function convertfile_convert_form($form, &$form_state) {
  * @see convertfile_convert_form()
  */
 function convertfile_convert_form_ajax_callback($form, &$form_state) {
-  return $form['test_conversion']['format'];
+  return $form['format'];
 }
 
 /**
