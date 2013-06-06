@@ -34,6 +34,7 @@ function cf_googledrive_default_rules_configuration() {
           { "convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "docx" } },
           { "convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "doc" } },
           { "convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "xls" } },
+          { "convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "odt" } },
           { "convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "xlsx" } }
         ]
       }
