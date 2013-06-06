@@ -15,6 +15,8 @@ require_once('convertfile.db.conversion.inc');
  * Implements hook_enable().
  */
 function convertfile_enable() {
+  // Enable help hook text.
+  variable_set('cf_imagemagick_help', TRUE);
   // Generate a friendly message to inform the admin what to do next after
   // enabling the module.
   drupal_set_message(t('Please configure the module at') . ' <a href="/admin/config/convertfile/settings">/admin/config/convertfile/settings</a>', 'status');

@@ -91,6 +91,12 @@ function convertfile_config_form($form, &$form_state) {
   );
 
   // Settings.
+  $form['convertfile_help'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Help text',
+    '#description' => 'Enable help text and links which are inserted on various pages.',
+    '#default_value' => variable_get('convertfile_help', FALSE),
+  );
   $form['convertfile_private_downloads'] = array(
     '#type' => 'checkbox',
     '#title' => t('Private download.'),
@@ -144,6 +150,10 @@ function convertfile_config_form_submit($form, &$form_state) {
   variable_set('convertfile_private_downloads', $values['convertfile_private_downloads']);
   variable_set('convertfile_inline_convert', $values['convertfile_inline_convert']);
   variable_set('convertfile_inline_revert', $values['convertfile_inline_revert']);
+  if ($values['convertfile_help'] != variable_get('convertfile_help', FALSE)) {
+    drupal_set_message(t('Cache may need to be flushed to add or remove some helper text and links.'));
+  }
+  variable_set('convertfile_help', $values['convertfile_help']);
 
   drupal_set_message(t('Settings have been updated.'));
 }

@@ -61,16 +61,38 @@ function convertfile_menu() {
     'file path' => drupal_get_path('module', 'convertfile'),
     'weight' => 20,
   );
-  // Redirect rules back to convertfile.
-  $items['admin/config/workflow/rules/reaction/convertfile_back'] = array(
-    'type' => MENU_LOCAL_ACTION,
-    'title' => 'Back to Convert File',
-    'page callback' => 'convertfile_redirect_rules',
-    'access arguments' => array('administer convertfile settings'),
-    'file' => 'convertfile.admin.inc',
-    'file path' => drupal_get_path('module', 'convertfile'),
-    'weight' => 30,
-  );
+  if (variable_get('convertfile_help', FALSE)) {
+    // Redirect rules back to convertfile.
+    $items['admin/config/workflow/rules/reaction/convertfile_back'] = array(
+      'type' => MENU_LOCAL_ACTION,
+      'title' => 'Back to Convert File',
+      'page callback' => 'convertfile_redirect_convertfile_rules',
+      'access arguments' => array('administer convertfile settings'),
+      'file' => 'convertfile.admin.inc',
+      'file path' => drupal_get_path('module', 'convertfile'),
+      'weight' => 30,
+    );
+    // Redirect to drupal rules.
+    $items['admin/config/convertfile/settings/rules/drupal_rules'] = array(
+      'type' => MENU_LOCAL_ACTION,
+      'title' => 'Rules',
+      'page callback' => 'convertfile_redirect_drupal_rules',
+      'access arguments' => array('administer convertfile settings'),
+      'file' => 'convertfile.admin.inc',
+      'file path' => drupal_get_path('module', 'convertfile'),
+      'weight' => 25,
+    );
+    // Redirect to drupal rules add new rule.
+    $items['admin/config/convertfile/settings/rules/drupal_add_new_rule'] = array(
+      'type' => MENU_LOCAL_ACTION,
+      'title' => 'Add new rule',
+      'page callback' => 'convertfile_redirect_drupal_rules_new',
+      'access arguments' => array('administer convertfile settings'),
+      'file' => 'convertfile.admin.inc',
+      'file path' => drupal_get_path('module', 'convertfile'),
+      'weight' => 30,
+    );
+  }
   // Provide a page to display all installed providers and their 
   // configuration.
   $items['admin/config/convertfile/settings/handler'] = array(
@@ -93,10 +115,24 @@ function convertfile_menu() {
 }
 
 /**
- * Redirect back to convertfile rules from drupal rules.
+ * Redirect to convertfile rules from drupal rules.
  */
-function convertfile_redirect_rules() {
+function convertfile_redirect_convertfile_rules() {
   drupal_goto('/admin/config/convertfile/settings/rules');
+}
+
+/**
+ * Redirect to drupal rules from convertfile rules.
+ */
+function convertfile_redirect_drupal_rules() {
+  drupal_goto('/admin/config/workflow/rules');
+}
+
+/**
+ * Redirect to drupal new rule from convertfile rules.
+ */
+function convertfile_redirect_drupal_rules_new() {
+  drupal_goto('/admin/config/workflow/rules/reaction/add');
 }
 
 /**
@@ -686,33 +722,35 @@ function convertfile_help($path, $arg) {
   // If help is empty at end of function then NULL will be returned.
   $help = '';
 
-  // Settings page.
-  if ($path == 'admin/config/convertfile/settings/rules') {
-    // Help text if rules_admin is not turned on.
-    if (!module_exists('rules_admin')) {
-      $help .= '<p><a href="/admin/modules">Rules UI</a> (rules_admin) ' . t('module must be enabled to edit or examine the details of rules.') . '</p>';
+  // Only return help text if configured to do so.
+  if (variable_get('convertfile_help', FALSE)) {
+    // Settings page.
+    if ($path == 'admin/config/convertfile/settings/rules') {
+      // Help text if rules_admin is not turned on.
+      if (!module_exists('rules_admin')) {
+        $help .= '<p><a href="/admin/modules">Rules UI</a> (rules_admin) ' . t('module must be enabled to edit or examine the details of rules.') . '</p>';
+      }
     }
-    $help .= '<p>[<a href="/admin/config/workflow/rules">Rules</a>] [<a href="/admin/config/workflow/rules/reaction/add">Add new rule</a>]</p>';
-  }
 
-  // Settings page and all children.
-  if (strpos($path, 'admin/config/convertfile/settings') !== FALSE) { 
-    // Help text if no providers have been enabled.
-    $providers = convertfile_collect_info();
-    if (empty($providers)) {
-      $help .= '<p>' . t('You must have at least one conversion provider enabled for this module to do anything useful. Visit the <a href="/admin/modules">modules page</a> and enable a conversion provider.') . '</p>';
+    // Settings page and all children.
+    if (strpos($path, 'admin/config/convertfile/settings') !== FALSE) { 
+      // Help text if no providers have been enabled.
+      $providers = convertfile_collect_info();
+      if (empty($providers)) {
+        $help .= '<p>' . t('You must have at least one conversion provider enabled for this module to do anything useful. Visit the <a href="/admin/modules">modules page</a> and enable a conversion provider.') . '</p>';
+      }
+      // Help text if no widgets have been configured yet.
+      $images = convertfile_find_widgets('convertfile_image');
+      $files = convertfile_find_widgets('convertfile_file');
+      if (empty($images) && empty($files)) {
+        $help .= '<p>' . t('Edit a <a href="@convertfile">content type</a> and set a file or image field to use the new <u>Convert File</u> or <u>Convert Image</u> widgets. Include the converted format file extension in the accepted formats field.', array('@convertfile' => url('admin/structure/types'))) . '</p>';
+      }
     }
-    // Help text if no widgets have been configured yet.
-    $images = convertfile_find_widgets('convertfile_image');
-    $files = convertfile_find_widgets('convertfile_file');
-    if (empty($images) && empty($files)) {
-      $help .= '<p>' . t('Edit a <a href="@convertfile">content type</a> and set a file or image field to use the new <u>Convert File</u> or <u>Convert Image</u> widgets. Include the converted format file extension in the accepted formats field.', array('@convertfile' => url('admin/structure/types'))) . '</p>';
-    }
-  }
 
-  // Main module help for the convertfile module
-  if ($path == 'admin/help#convertfile') {
-    $help .= '<p>' . t('Convert File adds a new widget for file and image fields named <u>Convert File</u> and <u>Convert Image</u>. The settings for these widget operate exactly as the default except for providing extra configuration that allow for automatic conversion of the file submitted to the field. See <a href="@convertfile">Convert File Settings</a> for more information.', array('@convertfile' => url('admin/config/convertfile/settings'))) . '</p>';
+    // Main module help for the convertfile module
+    if ($path == 'admin/help#convertfile') {
+      $help .= '<p>' . t('Convert File adds a new widget for file and image fields named <u>Convert File</u> and <u>Convert Image</u>. The settings for these widget operate exactly as the default except for providing extra configuration that allow for automatic conversion of the file submitted to the field. See <a href="@convertfile">Convert File Settings</a> for more information.', array('@convertfile' => url('admin/config/convertfile/settings'))) . '</p>';
+    }
   }
 
   return (strlen($help)) ? $help : NULL;
