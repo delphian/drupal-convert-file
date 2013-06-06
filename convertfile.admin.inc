@@ -119,6 +119,12 @@ function convertfile_config_form($form, &$form_state) {
     '#description' => t('Enable convert options inline on each managed file field.'),
     '#default_value' => variable_get('convertfile_inline_convert', 0),
   );
+  $form['convertfile_inline_revert'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Inline revert.'),
+    '#description' => t('Enable revert button inline on each managed file field.'),
+    '#default_value' => variable_get('convertfile_inline_revert', 0),
+  );
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -153,6 +159,7 @@ function convertfile_config_form_submit($form, &$form_state) {
 
   variable_set('convertfile_private_downloads', $values['convertfile_private_downloads']);
   variable_set('convertfile_inline_convert', $values['convertfile_inline_convert']);
+  variable_set('convertfile_inline_revert', $values['convertfile_inline_revert']);
 
   drupal_set_message(t('Settings have been updated.'));
 }

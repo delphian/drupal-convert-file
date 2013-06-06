@@ -176,40 +176,48 @@ function convertfile_element_info() {
  * Implements hook_element_info_alter().
  *
  * Attatch an extra process callback to managed_file element types for the
- * purpose of adding a new Revert button if applicable.
+ * purpose of adding new buttons and options.
  */
 function convertfile_element_info_alter(&$type) {
   $type['managed_file']['#process'][] = 'convertfile_managed_file_process';
 }
 
 /**
- * Process function to expand the managed_file element type.
+ * Element process function to expand a file like element with extra features.
  *
- * Expands the file type to include Revert button.
+ * Create a revert button to restore older version of file. Create convert
+ * options and buttons to convert current file to a new format.
  *
- * @see file_managed_file_process().
+ * @see convertfile_element_info_alter()
+ * @see file_managed_file_process()
  */
 function convertfile_managed_file_process($element, &$form_state, $form) {
   $provider = isset($element['#value']['convertfile_provider']) ?
     $element['#value']['convertfile_provider'] : NULL;
   $fid = isset($element['fid']['#value']) ? $element['fid']['#value'] : NULL;
 
+  // If this element does not contain an active file don't display any
+  // features.
   if ($fid) {
-    if ($backups = convertfile_db_conversion_get_backups($fid)) {
-      foreach($backups as $backup) {
-        $file = file_load($backup);
-        $element['convertfile_list_backup_' . $backup] = array(
-          '#type' => 'submit',
-          '#value' => t('Revert to') . ' ' . $file->filename,
-          '#weight' => 18,
-          '#submit' => array(
-            'convertfile_managed_file_submit',
-          ),
-        );
+
+    // Add inline revert buttons to this element.
+    if (variable_set('convertfile_inline_revert', FALSE)) {
+      if ($backups = convertfile_db_conversion_get_backups($fid)) {
+        foreach($backups as $backup) {
+          $file = file_load($backup);
+          $element['convertfile_list_backup_' . $backup] = array(
+            '#type' => 'submit',
+            '#value' => t('Revert to') . ' ' . $file->filename,
+            '#weight' => 18,
+            '#submit' => array(
+              'convertfile_managed_file_submit',
+            ),
+          );
+        }
       }
     }
 
-    // Inline form element convert.
+    // Add inline convert options.
     if (variable_get('convertfile_inline_convert', FALSE)) {
       $element['convertfile_provider'] = array(
         '#type' => 'select',
