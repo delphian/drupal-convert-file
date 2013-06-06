@@ -755,7 +755,8 @@ function convertfile_help($path, $arg) {
 
   // Only return help text if configured to do so.
   if (variable_get('convertfile_help', FALSE)) {
-    // Settings page.
+
+    // Rules page.
     if ($path == 'admin/config/convertfile/settings/rules') {
       // Help text if rules_admin is not turned on.
       if (!module_exists('rules_admin')) {
@@ -770,6 +771,12 @@ function convertfile_help($path, $arg) {
       if (empty($providers)) {
         $help .= '<p>' . t('You must have at least one conversion provider enabled for this module to do anything useful. Visit the <a href="/admin/modules">modules page</a> and enable a conversion provider.') . '</p>';
       }
+    }
+
+    // Settings page only.
+    if ($path == 'admin/config/convertfile/settings') {
+      // Always reference the wiki.
+      $help .= '<p><a href="https://github.com/delphian/drupal-convert-file/wiki">Consult the wiki pages for help or to submit issues.</p>';
       // Help text if no widgets have been configured yet.
       $images = convertfile_find_widgets('convertfile_image');
       $files = convertfile_find_widgets('convertfile_file');
@@ -836,9 +843,13 @@ function convertfile_file_update($file) {
  * Implements hook_file_delete().
  *
  * Delete all the backups of a file when it is removed.
+ *
+ * @param stdObject $file
+ *   Drupal file object.
  */
 function convertfile_file_delete($file) {
   if (isset($file->fid)) {
+    // Delete all the backups for this file if it is primary.
     if ($cids = convertfile_db_conversion_get_backups($file->fid)) {
       foreach ($cids as $cid => $fid) {
         if ($file = file_load($fid)) {
@@ -853,8 +864,9 @@ function convertfile_file_delete($file) {
 /**
  * Implements hook_field_formatter_info().
  *
- * Create a custom field formatter. This may be selected uner the manage
- * display tab when editing an entity structure.
+ * Create a custom field formatter. This may be selected under the manage
+ * display tab when editing an entity structure. View this field as a file
+ * link, and links to all previous file backups as well.
  */
 function convertfile_field_formatter_info() {
   return array(
