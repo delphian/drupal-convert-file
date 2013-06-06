@@ -82,5 +82,33 @@ function cf_googledrive_default_rules_configuration() {
 
   $configs['cf_googledrive_txt'] = rules_import($rule);
 
+  // Convert files to ODT.
+  $rule = '{ "rules_cf_google_drive_convert_to_odt" : {
+    "LABEL" : "CF Google Drive convert to ODT",
+    "PLUGIN" : "reaction rule",
+    "TAGS" : [ "convertfile", "drive", "google", "odt" ],
+    "REQUIRES" : [ "convertfile", "cf_googledrive" ],
+    "ON" : [ "convertfile_request" ],
+    "IF" : [
+      { "convertfile_condition_provider" : {
+          "instance" : [ "instance" ],
+          "provider" : { "value" : { "cf_googledrive" : "cf_googledrive" } }
+        }
+      },
+      { "convertfile_condition_format" : {
+          "instance" : [ "instance" ],
+          "format" : { "value" : { "odt" : "odt" } }
+        }
+      },
+      { "NOT convertfile_condition_file_extension" : { "file" : [ "file" ], "extension" : "odt" } }
+    ],
+    "DO" : [
+      { "cf_googledrive_odt" : { "file" : [ "file" ], "instance" : [ "instance" ] } }
+    ]
+  }
+}';
+
+  $configs['cf_googledrive_odt'] = rules_import($rule);
+
   return $configs;
 }
