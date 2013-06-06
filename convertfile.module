@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Automatically convert saved files to a different format.
+ * Automatically convert uploaded or saved files to a different format.
  */
 
 require_once('convertfile.db.conversion.inc');
@@ -71,6 +71,9 @@ function convertfile_menu() {
 
 /**
  * Implements hook_permission().
+ *
+ * Create permission to administer convertfile settings.
+ * Create permission to download backup files in private file system.
  */
 function convertfile_permission() {
   return array(
@@ -113,6 +116,11 @@ function convertfile_collect_info($reset = FALSE) {
 
 /**
  * Implements hook_field_widget_info().
+ *
+ * Create two new widgets, one for files, the other for images. The main
+ * purpose of the widget is to alter the field validator to which it is
+ * attached and to contain information concerning which type of conversion
+ * to execute.
  */
 function convertfile_field_widget_info() {
   return array(
@@ -145,7 +153,8 @@ function convertfile_field_widget_info() {
 /**
  * Implements hook_element_info().
  *
- * Create convertfile_file type for form api use.
+ * Create convertfile_file element type for form api use. Now forms
+ * constructed by hand can also auto convert files.
  */
 function convertfile_element_info() {
   $file_path = drupal_get_path('module', 'file');
