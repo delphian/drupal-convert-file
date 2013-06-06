@@ -187,7 +187,7 @@ function convertfile_db_conversion_is_backup($fid_backup) {
 }
 
 /**
- * Get all backup files associated with file.
+ * Get all backup files associated with file. Most recent first.
  *
  * @param int $fid_current
  *   FID for the current file.
@@ -201,6 +201,7 @@ function convertfile_db_conversion_get_backups($fid_current) {
   $records = db_select(CONVERTFILE_DB_CONVERSION, 'c')
     ->fields('c')
     ->condition('fid_current', $fid_current)
+    ->orderBy('created', 'DESC')
     ->execute()
     ->fetchAll();
 
