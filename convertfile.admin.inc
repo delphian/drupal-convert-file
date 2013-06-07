@@ -111,6 +111,7 @@ function convertfile_config_form_submit($form, &$form_state) {
  */
 function convertfile_convert_form($form, &$form_state) {
   $provider = isset($form_state['values']['provider']) ? $form_state['values']['provider'] : NULL;
+  $format = isset($form_state['values']['format']) ? $form_state['values']['format'] : NULL;
 
   $form['provider'] = array(
     '#type' => 'select',
@@ -130,6 +131,7 @@ function convertfile_convert_form($form, &$form_state) {
     '#prefix' => '<div id="format-div">',
     '#suffix' => '</div>',
   );
+  $form['specific'] = convertfile_options_specific($provider, $format);
   $form['fid_new'] = array(
     '#type' => 'managed_file',
     '#title' => t('Uploaded file.'),
@@ -172,9 +174,10 @@ function convertfile_convert_form_submit($form, &$form_state) {
   $fid = (isset($values['fid_new']) && $values['fid_new']) ? $values['fid_new'] : $fid;
   $provider = isset($values['provider']) ? $values['provider'] : NULL;
   $format = isset($values['format']) ? $values['format'] : NULL;
+  $specific = isset($values['specific']) ? $values['specific'] : NULL;
 
   if ($fid && $file = file_load($fid)) {
-    if (convertfile_convert_file($file, $provider, $format)) {
+    if (convertfile_convert_file($file, $provider, $format, $specific)) {
       $url = file_create_url($file->uri);
       drupal_set_message("File has been converted to: <a href='{$url}'>$url</a>" , 'status');
     }

@@ -434,6 +434,8 @@ function convertfile_managed_file_value(&$element, $input = FALSE, $form_state =
 function convertfile_field_widget_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $settings = $widget['settings'];
+  $provider = $settings['convertfile_provider'];
+  $format = $settings['convertfile_format'];
 
   if ($field['type'] == 'file') {
     $form['progress_indicator'] = array(
@@ -463,39 +465,47 @@ function convertfile_field_widget_settings_form($field, $instance) {
     );
   }
 
+  $options = convertfile_options_provider();
+
   // Compile array of all file conversion providers.
-  $options = array('none' => '- None -');
-  if ($results = convertfile_collect_info()) {
-    foreach($results as $key => $result) {
-      $options[$key] = $result['name'];
-    }
-  }
+  // $options = array('none' => '- None -');
+  // if ($results = convertfile_collect_info()) {
+  //   foreach($results as $key => $result) {
+  //     $options[$key] = $result['name'];
+  //   }
+  // }
 
   // Compile list of specific provider's formats.
-  $format_options = array('none' => '- None -');
-  if (isset($settings['convertfile_provider'])) {
-    $handler = $settings['convertfile_provider'];
-    if (isset($results[$handler])) {
-      foreach($results[$handler]['types'] as $key => $value) {
-        $format_options[$key] = $value;
-      }
-    }
-  }
+  // $format_options = array('none' => '- None -');
+  // if (isset($settings['convertfile_provider'])) {
+  //   $handler = $settings['convertfile_provider'];
+  //   if (isset($results[$handler])) {
+  //     foreach($results[$handler]['types'] as $key => $value) {
+  //       $format_options[$key] = $value;
+  //     }
+  //   }
+  // }
 
   // O(n^2)
-  foreach($results as $key => $provider) {
-    foreach($provider['types'] as $key => $type) {
-      $format_options[$key] = $type;
-    }
-  }
+  // foreach($results as $key => $provider) {
+  //   foreach($provider['types'] as $key => $type) {
+  //     $format_options[$key] = $type;
+  //   }
+  // }
 
   // Add our common custom settings
   $form['convertfile_provider'] = array(
     '#title' => t('Convert using provider'),
     '#type' => 'select',
     '#options' => $options,
-    '#default_value' => isset($settings['convertfile_provider']) ? $settings['convertfile_provider'] : 'none',
+    '#default_value' => $provider ? $provider : 'none',
     '#description' => t('The provider used to convert this file.'),
+    '#ajax' => array(
+      'callback' => 'convertfile_field_widget_settings_form_ajax',
+      'wrapper' => 'convertfile-format-wrapper',
+      'method' => 'replace',
+      'effect' => 'fade',
+    ),
     '#weight' => 20,
   );
 
@@ -503,16 +513,49 @@ function convertfile_field_widget_settings_form($field, $instance) {
     '#title' => t('Convert to format'),
     '#type' => 'select',
     '#description' => 'The file format that will be converted to.',
-    '#options' => $format_options,
-    '#default_value' => isset($settings['convertfile_format']) ? $settings['convertfile_format'] : 'none',
+    '#options' => convertfile_options_format($provider),
+    '#default_value' => isset($format) ? $format : 'none',
     '#prefix' => "<div id='convertfile-format-wrapper'>",
     '#suffix' => '</div>',
     '#weight' => 22,
   );
-  $convertfile_collected_info = json_encode(convertfile_collect_info());
-  drupal_add_js(drupal_get_path('module', 'convertfile') . '/js/convert.admin.js');
-  drupal_add_js("var convertfile = $convertfile_collected_info", array('type' => 'inline'));
+
+  // Dirty little hack.
+  $_SESSION['convertfile_format'] = $format;
+  $_SESSION['convertfile_provider'] = $provider;
+  //$convertfile_collected_info = json_encode(convertfile_collect_info());
+  //drupal_add_js(drupal_get_path('module', 'convertfile') . '/js/convert.admin.js');
+  //drupal_add_js("var convertfile = $convertfile_collected_info", array('type' => 'inline'));
   return $form;
+}
+
+function convertfile_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
+
+  // Dirty little hack.
+  $format = isset($_SESSION['convertfile_format']) ? $_SESSION['convertfile_format'] : NULL;
+  $provider = isset($_SESSION['convertfile_provider']) ? $_SESSION['convertfile_provider'] : NULL;
+
+  $values = isset($form_state['values']['instance']['widget']['settings']) ? 
+    $form_state['values']['instance']['widget']['settings'] : NULL;
+  $provider = isset($values['convertfile_provider']) ? $values['convertfile_provider'] : $provider;
+  $format = isset($values['convertfile_format']) ? $values['convertfile_format'] : $format;
+
+  $form['instance']['widget']['settings']['convertfile_format'] = array(
+    '#title' => t('Convert to format'),
+    '#type' => 'select',
+    '#description' => 'The file format that will be converted to.',
+    '#options' => convertfile_options_format($provider),
+    '#default_value' => isset($format) ? $format : 'none',
+    '#prefix' => "<div id='convertfile-format-wrapper'>",
+    '#suffix' => '</div>',
+    '#weight' => 22,
+  );
+  $form['instance']['widget']['settings']['convertfile_specific'] = convertfile_options_specific($provider, $format);
+
+}
+
+function convertfile_field_widget_settings_form_ajax($form, &$form_state) {
+  return $form['instance']['widget']['settings']['convertfile_format'];
 }
 
 /**
@@ -571,6 +614,16 @@ function convertfile_options_format($provider_mn = NULL) {
 }
 
 /**
+ *
+ */
+function convertfile_options_specific($provider, $format) {
+  $options = NULL;
+  // Execute provider callback specified in info hook.
+
+  return $options;
+}
+
+/**
  * Programmatic wrapper for convertfile_validate_conversion().
  *
  * Call this function directly to perform a programmatically based conversion.
@@ -581,12 +634,14 @@ function convertfile_options_format($provider_mn = NULL) {
  *   The machine name of the provider.
  * @param string $format
  *   The machine name of the format to convert to.
+ * @param array $specific
+ *   The exact construction of options is dependant on the provider.
  *
  * @return bool
  *   TRUE on successful conversion, FALSE otherwise. See watchdog for error
  *   details.
  */
-function convertfile_convert_file($file, $provider, $format, $extensions = NULL) {
+function convertfile_convert_file($file, $provider, $format, $extensions = NULL, $specific = NULL) {
   $report = FALSE;
 
   $file = (is_object($file)) ? $file : file_load($file);
@@ -597,6 +652,7 @@ function convertfile_convert_file($file, $provider, $format, $extensions = NULL)
           'convertfile_provider' => $provider,
           'convertfile_format' => $format,
           'convertfile_extensions' => $extensions,
+          'convertfile_specific' => $specific,
         ),
       ),
     );
