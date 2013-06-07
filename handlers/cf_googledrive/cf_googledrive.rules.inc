@@ -163,7 +163,10 @@ function cf_googledrive_action_common($file, $instance, $format, $extension) {
   if (($library = libraries_load('google-api-php-client')) && !empty($library['loaded'])) {
     module_load_include('inc', 'cf_googledrive', 'cf_googledrive.api');
     if ($service = cf_googledrive_service(cf_googledrive_client())) {
-      $g_file = cf_googledrive_insert_file($service, $file->filename, 'temporary', NULL, $file->filemime, $file->uri);
+      // For some reason google drive will not convert a pdf to google doc
+      // automatically if the mime type of the original file specified.
+      $mimetype = ($file->filemime == 'application/pdf') ? NULL : $file->filemime;
+      $g_file = @cf_googledrive_insert_file($service, $file->filename, 'temporary', NULL, $mimetype, $file->uri);
       if ($g_file) {
         if ($data = cf_googledrive_download_file($service, $g_file, $format)) {
           $fp = fopen($file->uri, "wbx");
@@ -187,7 +190,7 @@ function cf_googledrive_action_common($file, $instance, $format, $extension) {
         }
         // Remove the file from Google Drive.
         if (!cf_googledrive_delete_file($service, $g_file->getId())) {
-         watchdog('convertfile', 'Can not remove from google drive.', NULL, WATCHDOG_ERROR);
+          watchdog('convertfile', 'Can not remove from google drive.', NULL, WATCHDOG_ERROR);
         }
       }
       else {
