@@ -430,6 +430,8 @@ function convertfile_managed_file_value(&$element, $input = FALSE, $form_state =
 
 /**
  * Implements hook_field_widget_settings_form().
+ *
+ * @todo fix the dirty little hack!
  */
 function convertfile_field_widget_settings_form($field, $instance) {
   $widget = $instance['widget'];
@@ -467,32 +469,6 @@ function convertfile_field_widget_settings_form($field, $instance) {
 
   $options = convertfile_options_provider();
 
-  // Compile array of all file conversion providers.
-  // $options = array('none' => '- None -');
-  // if ($results = convertfile_collect_info()) {
-  //   foreach($results as $key => $result) {
-  //     $options[$key] = $result['name'];
-  //   }
-  // }
-
-  // Compile list of specific provider's formats.
-  // $format_options = array('none' => '- None -');
-  // if (isset($settings['convertfile_provider'])) {
-  //   $handler = $settings['convertfile_provider'];
-  //   if (isset($results[$handler])) {
-  //     foreach($results[$handler]['types'] as $key => $value) {
-  //       $format_options[$key] = $value;
-  //     }
-  //   }
-  // }
-
-  // O(n^2)
-  // foreach($results as $key => $provider) {
-  //   foreach($provider['types'] as $key => $type) {
-  //     $format_options[$key] = $type;
-  //   }
-  // }
-
   // Add our common custom settings
   $form['convertfile_provider'] = array(
     '#title' => t('Convert using provider'),
@@ -523,9 +499,7 @@ function convertfile_field_widget_settings_form($field, $instance) {
   // Dirty little hack.
   $_SESSION['convertfile_format'] = $format;
   $_SESSION['convertfile_provider'] = $provider;
-  //$convertfile_collected_info = json_encode(convertfile_collect_info());
-  //drupal_add_js(drupal_get_path('module', 'convertfile') . '/js/convert.admin.js');
-  //drupal_add_js("var convertfile = $convertfile_collected_info", array('type' => 'inline'));
+
   return $form;
 }
 

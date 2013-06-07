@@ -109,7 +109,6 @@ function cf_imagemagick_action_jpg($file, $instance) {
  *   if an error was encountered, otherwise properties absense means
  *   success.
  *
- * @see cf_imagemagick_action_png()
  * @see http://php.net/manual/en/imagick.writeimage.php
  */
 function cf_imagemagick_action_common($file, $instance, $format, $extension) {
@@ -123,11 +122,20 @@ function cf_imagemagick_action_common($file, $instance, $format, $extension) {
   if (class_exists('Imagick')) {
     try {
       $im = new Imagick();
+
+      // Temporary setting to get pdfs to output larger.
+      $im->setResolution(300, 300);
+
       $im->readImage(drupal_realpath($file->uri));
       $im->setCompressionQuality(95);
+
       $im->resetIterator(); 
       $im = $im->appendImages(TRUE);
       $im->setImageFormat($extension);
+
+      // Temporary setting to get pdfs to output larger.
+      $im->resizeImage(800, 0, Imagick::FILTER_LANCZOS, 1);
+
       if (file_put_contents($file->uri, $im) !== FALSE) {
         $ext_new = $extension;
         $file->filename = $base . '.' . $ext . '.' . $ext_new;

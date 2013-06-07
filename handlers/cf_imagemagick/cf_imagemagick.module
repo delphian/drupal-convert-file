@@ -3,6 +3,8 @@
 /**
  * @file
  * File conversion provided by ImageMagick PHP extension.
+ *
+ * @see http://www.php.net/manual/en/class.imagick.php
  */
 
 /**
