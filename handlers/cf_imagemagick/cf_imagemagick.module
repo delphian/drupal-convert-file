@@ -40,8 +40,17 @@ function cf_imagemagick_convertfile_info() {
         'png' => '.png (image/png)',
         'jpg' => '.jpg (image/jpeg)',
       ),
+      'options_callback' => 'cf_imagemagick_options',
     ),
   );
+}
+
+function cf_imagemagick_options($format) {
+  $render['cf_imagemagick'] = array(
+    'dpi' => array(
+    ),
+  );
+  return $render;
 }
 
 /**
