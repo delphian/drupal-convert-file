@@ -37,6 +37,9 @@ function cf_convertfile_convertfile_info() {
       'types' => array (
         'gz' => '.gz (application/x-gzip)',
       ),
+      'help' => array(
+        'url' => 'https://github.com/delphian/drupal-convert-file/wiki/Convert-File',
+      ),
     ),
   );
 }

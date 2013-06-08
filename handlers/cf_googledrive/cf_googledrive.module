@@ -63,6 +63,9 @@ function cf_googledrive_convertfile_info() {
         'txt' => '.txt (text/plain)',
         'odt' => '.odt (application/vnd.oasis.opendocument.text)',
       ),
+      'help' => array(
+        'url' => 'https://github.com/delphian/drupal-convert-file/wiki/Google-Drive',
+      )
     ),
   );
 }
