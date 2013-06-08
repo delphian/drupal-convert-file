@@ -70,6 +70,8 @@ function cf_imagemagick_options($format, $specific = NULL) {
   $im = isset($specific['cf_imfs']) ? $specific['cf_imfs'] : NULL;
   $im_setresolution = isset($im['cf_imagemagick_opt_setresolution']) ? $im['cf_imagemagick_opt_setresolution'] : NULL;
   $im_resizeimage = isset($im['cf_imagemagick_opt_resizeimage']) ? $im['cf_imagemagick_opt_resizeimage'] : NULL;
+  $im_setcompressionquality = isset($im['cf_imagemagick_opt_setcompressionquality']) ? $im['cf_imagemagick_opt_setcompressionquality'] : NULL;
+  $im_appendimages = isset($im['cf_imagemagick_opt_appendimages']) ? $im['cf_imagemagick_opt_appendimages'] : NULL;
 
   $options = array();
   $options['cf_imfs'] = array(
@@ -89,6 +91,20 @@ function cf_imagemagick_options($format, $specific = NULL) {
     '#title' => 'Resize Image',
     '#default_value' => $im_resizeimage,
     '#description' => 'Imagick::resizeImage(<i>x</i>, <i>y</i>, Imagick::FILTER_LANCZOS, 1). Make all images 800 pixels wide example: "<b>800, 0</b>"',
+  );
+  $options['cf_imfs']['cf_imagemagick_opt_setimagequality'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Set Compression Quality',
+    '#default_value' => $im_setcompressionquality,
+    '#description' => 'Imagick::setCompressionQuality(int $quality). Compress image at 95% example: "<b>95</b>"',
+  );
+
+  // This should probably come last in the list.
+  $options['cf_imfs']['cf_imagemagick_opt_appendimages'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Append Images',
+    '#default_value' => $im_appendimages,
+    '#description' => 'Imagick::appendImages(bool $stack). Stack multiple images created by pdf conversion vertically example: "<b>1</b>"',
   );
 
   return $options;

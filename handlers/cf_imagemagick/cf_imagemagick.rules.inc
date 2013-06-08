@@ -114,7 +114,7 @@ function cf_imagemagick_action_jpg($file, $instance) {
 function cf_imagemagick_action_common($file, $instance, $format, $extension) {
   $report = FALSE;
   $settings = $instance['widget']['settings'];
-  $im_settings = $settings['convertfile_ajax']['convertfile_specific']['cf_imfs'];
+  $im_opt = $settings['convertfile_ajax']['convertfile_specific']['cf_imfs'];
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
   $base = pathinfo($file->filename, PATHINFO_FILENAME);
   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);
@@ -123,20 +123,8 @@ function cf_imagemagick_action_common($file, $instance, $format, $extension) {
   if (class_exists('Imagick')) {
     try {
       $im = new Imagick();
-
-      // Temporary setting to get pdfs to output larger.
-      $im->setResolution(300, 300);
-
-      $im->readImage(drupal_realpath($file->uri));
-      $im->setCompressionQuality(95);
-
-      $im->resetIterator(); 
-      $im = $im->appendImages(TRUE);
+      $im = cf_imagemagick_action_settings($im, $im_opt, $file);
       $im->setImageFormat($extension);
-
-      // Temporary setting to get pdfs to output larger.
-      $im->resizeImage(800, 0, Imagick::FILTER_LANCZOS, 1);
-
       if (file_put_contents($file->uri, $im) !== FALSE) {
         $ext_new = $extension;
         $file->filename = $base . '.' . $ext . '.' . $ext_new;
@@ -163,4 +151,57 @@ function cf_imagemagick_action_common($file, $instance, $format, $extension) {
   }
 
   return $report;
+}
+
+/**
+ * Apply instance specific configuration to ImageMagick object.
+ *
+ * @param Imagick $im
+ *   The ImageMgaick object. This object will be modified.
+ * @param array $settings
+ *   Associative array, key being the method name to invoke, with the value
+ *   containing the comma seperated parameters.
+ * @param stdObject|int $file
+ *   Drupal file object or FID that is being operated on.
+ *
+ * @return Imagick
+ *   The $im passed in if all settings have been applied, throws an exception
+ *   if one or more encountered an error.
+ *
+ * @see http://php.net/manual/en/book.imagick.php
+ */
+function cf_imagemagick_action_settings($im, $settings, $file) {
+  $file = is_object($file) ? $file : file_load($file);
+
+  if (method_exists($im, 'getFilename')) {
+    // Execute methods that must happen before a file is loaded.
+    foreach($settings as $setting => $arguments) {
+      $setting = substr($setting, 19);
+      $args = explode(',', $arguments);
+      // Deviate from drupal standards for the sake of readability.
+      if ($setting == 'setresolution') { $im->setResolution($args[0], $args[1]); }
+    }
+    // Load the file into Imagick object.
+    $im->readImage(drupal_realpath($file->uri));
+    // Execute methods that must happen after a file is loaded.
+    foreach($settings as $setting => $arguments) {
+      // Settings are only active if they have a value.
+      if (strlen($arguments)) {
+        $args = explode(',', $arguments);
+        $setting = substr($setting, 19);
+        if ($setting == 'resizeimage') { $im->resizeImage($args[0], $args[1], Imagick::FILTER_LANCZOS, 1); }
+        if ($setting == 'setcompressionquality') { $im->setCompressionQuality($args[0]); }
+        if ($setting == 'appendimages') {
+          // I don't actually know what resetIterator does.
+          $im->resetIterator();
+          $im = $im->appendImages($args[0]);
+        }
+      }
+    }
+  }
+  else {
+    throw new Exception('Parameter provided was not Imagick object.');
+  }
+
+  return $im;
 }
