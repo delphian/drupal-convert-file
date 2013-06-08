@@ -775,47 +775,34 @@ function convertfile_validate_conversion($file, $instance) {
     $function = isset($info[$settings['convertfile_provider']]['callback']) ?
       $info[$settings['convertfile_provider']]['callback'] : NULL;
 
-    // Save original file. @todo what if the conversion below via rules fails???
-    $original_file = clone $file;
-    // File already exists.
-    if (isset($original_file->fid)) {
-      $dir = drupal_dirname($file->uri);
-      $file->convertfile['backup'] = file_copy($file, $dir . $file->filename, FILE_EXISTS_RENAME);
-    }
-    // File has just been uploaded.
-    else {
-      copy($original_file->uri, $original_file->destination);
-      $original_file->uri = $original_file->destination;
-      unset($original_file->destination);
-      file_save($original_file);
-      if (isset($original_file->fid)) {
-        $file->convertfile['backup'] = $original_file;
-      }
-    }
+    // Save original file to $file->convertfile['backup'] with its own FID.
+    $file = convertfile_backup_file($file, $instance);
 
+    // Execute the provider callback function if specified.
     if ($function && function_exists($function)) {
-      // This is not intended for contributed code.
       if (!$function($file, $instance)) {
         $file->convertfile['error'] = "File conversion by {$name} callback failed.";
       }
     }
+    // No provider callback function specified (good). Invoke rules.
+    // Everything should be rules based.
     else {
-      // Everything _should be_ rules based.
       rules_invoke_event('convertfile_request', $file, $instance);
     }
 
     // If a conversion has failed then remove the backup file.
     if (isset($file->convertfile['error'])) {
-      // Remove the backup file.
       file_delete($file->convertfile['backup']);
       unset($file->convertfile['backup']);
     }
 
     // If file has a FID then it is not a new upload.
     if (isset($file->fid) && $file->fid) {
+      // We must resave the file information. Because this is not a new upload
+      // nobody else is going to resave this.
       file_save($file);
       $dir = drupal_dirname($file->uri);
-      $original = $file->convertfile['original'];
+      // "move" the file to record any changes to the filename on disk.
       if ($moved_file = file_move($file, $dir . $file->filename, FILE_EXISTS_RENAME)) {
         $file->uri = $moved_file->uri;
       }
@@ -846,6 +833,60 @@ function convertfile_validate_conversion($file, $instance) {
     watchdog('convertfile', "{$name} Saved: {$file->convertfile['original']->filename} To: {$file->filename} " . 
       "({$file->uri})", NULL, WATCHDOG_INFO);
     rules_invoke_event('convertfile_success', $file, $instance);
+  }
+
+  return $report;
+}
+
+/**
+ * Clone the file object and save clone as independant copy of original.
+ *
+ * If the file object argument already references an existing managed file
+ * then a managed copy will be made, the resulting new file object being
+ * assigned to $file->convertfile['backup']. If the file object contains a
+ * file that has just been uploaded (has not yet been formally saved and has
+ * no fid) then a copy of the object will be made, saved formally as a managed
+ * file and also assigned to $file->convertfile['backup'].
+ *
+ * No permenant association between the original file and backup file will
+ * be provided and is the responsibility of the calling function.
+ * 
+ * @param stdClass $file
+ *   Drupal file object or FID to create backup for.
+ * @param array $instance
+ *   The field instance that contains specific configuration for this file.
+ *
+ * @return stdClass|bool
+ *   The file object or NULL on failure. On success the original file object
+ *   will have the newly created and saved backup object, containing its own
+ *   fid, assigned to $file->convertfile['backup'].
+ */
+function convertfile_backup_file($file, $instance) {
+  $report = NULL;
+  $file = (is_object($file)) ? $file : file_load($file);
+
+  $original_file = clone $file;
+  // If the file is already managed then make another managed copy.
+  if (isset($original_file->fid)) {
+    $dir = drupal_dirname($file->uri);
+    $file->convertfile['backup'] = file_copy($file, $dir . $file->filename, FILE_EXISTS_RENAME);
+    if (isset($file->convertfile['backup']->fid)) {
+      $report = $file;
+    }
+  }
+  // If the file has just been uploaded then we must save a new managed copy.
+  // as the backup. This results in the non intuitive effect of assigning the
+  // backup an FID that precedes the actual uploaded file's eventual FID.
+  else {
+    if (copy($original_file->uri, $original_file->destination)) {
+      $original_file->uri = $original_file->destination;
+      unset($original_file->destination);
+      file_save($original_file);
+      if (isset($original_file->fid)) {
+        $file->convertfile['backup'] = $original_file;
+        $report = $file;
+      }
+    }
   }
 
   return $report;

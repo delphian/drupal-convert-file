@@ -77,6 +77,12 @@ function convertfile_config_form($form, &$form_state) {
     '#description' => t('Enable revert button inline on each managed file field.'),
     '#default_value' => variable_get('convertfile_inline_revert', 0),
   );
+  $form['convertfile_to_backup'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Convert to backup.'),
+    '#description' => t('Normally the current file is converted to the new requested format and a backup of the original is made. Reverse this operation so the current file always stays the same but a new backup is made using the requested conversion format.'),
+    '#default_value' => variable_get('convertfile_to_backup', 0),
+  );
 
   $form['submit'] = array(
     '#type' => 'submit',
@@ -98,6 +104,7 @@ function convertfile_config_form_submit($form, &$form_state) {
     drupal_set_message(t('Cache may need to be flushed to add or remove some helper text and links.'));
   }
   variable_set('convertfile_help', $values['convertfile_help']);
+  variable_set('convertfile_to_backup', $values['convertfile_to_backup']);
 
   drupal_set_message(t('Settings have been updated.'));
 }
