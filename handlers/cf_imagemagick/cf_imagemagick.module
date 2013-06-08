@@ -70,7 +70,7 @@ function cf_imagemagick_help($path, $arg) {
     if ($path == 'admin/config/convertfile/settings/handler/imagemagick') {
 
       $help .= '' .
-      '<p><a href="https://github.com/delphian/drupal-convert-file/wiki/ImageMagic">Help Wiki</a></p>';
+      '<p>[<a href="https://github.com/delphian/drupal-convert-file/wiki/ImageMagick">Help Wiki</a>]</p>';
 
       // Helper text if ImageMagick PHP extension is missing.
       if (!class_exists('Imagick')) {

@@ -83,25 +83,12 @@ function cf_googledrive_help($path, $arg) {
   if (variable_get('cf_googledrive_help', FALSE)) {
     if ($path == 'admin/config/convertfile/settings/handler/googledrive') {
 
+      $help .= '' .
+      '<p>[<a href="https://github.com/delphian/drupal-convert-file/wiki/Google-Drive">Help Wiki</a>]</p>';
+
       // Helper text to create google application.
       if (!variable_get('cf_googledrive_client_id')) {
-        $link = url($_GET['q'], array('absolute' => TRUE));
-        $help .= '' .
-          '<p>This module must use a google application to access the Google Drive service. Google will then check which individual users have granted the google application access to their Google Drive. The application must first be created at google. After creation, submit the app identification and secret key below so that drupal can authenticate itself as operating on behalf of this new application. Then you will be able to connect (authorize) an individual Google Drive account to this application.</p>' .
-          '<ol>' .
-          '  <li>Create an API project in the <a href="https://code.google.com/apis/console/">Google APIs Console</a>.</li>' .
-          '  <li>Select the <b>Services</b> tab in your API project, and enable the Drive API <u>and</u> Drive SDK.</li>' .
-          '  <li>Select the <b>API Access</b> tab in your API project, and click <b>Create an OAuth 2.0 client ID</b>.</li>' .
-          '  <li>In the <b>Branding Information</b> section, provide a name for your application (e.g. "Drupal Convert File Google Drive Provider"), and click <b>Next</b>. Providing a product logo is optional.</li>' .
-          '  <li>In the <b>Client ID Settings</b> section, do the following:</li>' .
-          '  <ol>' .
-          '    <li>Select <b>Web application</b> for the <b>Application type</b>.</li>' .
-          '    <li>Click the <b>more options</b> link next to the heading, <b>Your site or hostname</b>.</li>' .
-          '    <li>Enter ' . $link . ' in the <b>Authorized Redirect URIs</b> field. This must be a valid top level domain. Leave the javascript field empty.</li>' .
-          '    <li>Click <b>Create Client ID</b>.</li>' .
-          '  </ol>' .
-          '  <li>In the <b>API Access</b> page, locate the section <b>Client ID for Web applications</b> and note the <b>Client ID</b> value.</li>' .
-          '</ol><br>';
+        $help .= '<p>[<a href="https://github.com/delphian/drupal-convert-file/wiki/Google-Drive#installation">Please see the installation instructions</a>]';
       }
 
       // Helper text when credentails are present but its not working for some reason.
