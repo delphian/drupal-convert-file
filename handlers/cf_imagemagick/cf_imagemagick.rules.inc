@@ -176,10 +176,13 @@ function cf_imagemagick_action_settings($im, $settings, $file) {
   if (method_exists($im, 'getFilename')) {
     // Execute methods that must happen before a file is loaded.
     foreach($settings as $setting => $arguments) {
-      $setting = substr($setting, 19);
-      $args = explode(',', $arguments);
-      // Deviate from drupal standards for the sake of readability.
-      if ($setting == 'setresolution') { $im->setResolution($args[0], $args[1]); }
+      // Settings are only active if they have a value.
+      if (strlen($arguments)) {
+        $args = explode(',', $arguments);
+        $setting = substr($setting, 19);
+        // Deviate from drupal standards for the sake of readability.
+        if ($setting == 'setresolution') { $im->setResolution($args[0], $args[1]); }
+      }
     }
     // Load the file into Imagick object.
     $im->readImage(drupal_realpath($file->uri));
@@ -191,6 +194,7 @@ function cf_imagemagick_action_settings($im, $settings, $file) {
         $setting = substr($setting, 19);
         if ($setting == 'resizeimage') { $im->resizeImage($args[0], $args[1], Imagick::FILTER_LANCZOS, 1); }
         if ($setting == 'setcompressionquality') { $im->setCompressionQuality($args[0]); }
+        if ($setting == 'rotateimage') { $im->rotateImage(new ImagickPixel($args[0]), $args[1]); }
         if ($setting == 'appendimages') {
           // I don't actually know what resetIterator does.
           $im->resetIterator();

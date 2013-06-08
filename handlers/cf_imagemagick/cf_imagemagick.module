@@ -72,6 +72,7 @@ function cf_imagemagick_options($format, $specific = NULL) {
   $im_resizeimage = isset($im['cf_imagemagick_opt_resizeimage']) ? $im['cf_imagemagick_opt_resizeimage'] : NULL;
   $im_setcompressionquality = isset($im['cf_imagemagick_opt_setcompressionquality']) ? $im['cf_imagemagick_opt_setcompressionquality'] : NULL;
   $im_appendimages = isset($im['cf_imagemagick_opt_appendimages']) ? $im['cf_imagemagick_opt_appendimages'] : NULL;
+  $im_rotateimage = isset($im['cf_imagemagick_opt_rotateimage']) ? $im['cf_imagemagick_opt_rotateimage'] : NULL;
 
   $options = array();
   $options['cf_imfs'] = array(
@@ -91,6 +92,12 @@ function cf_imagemagick_options($format, $specific = NULL) {
     '#title' => 'Resize Image',
     '#default_value' => $im_resizeimage,
     '#description' => 'Imagick::resizeImage(<i>x</i>, <i>y</i>, Imagick::FILTER_LANCZOS, 1). Make all images 800 pixels wide example: "<b>800, 0</b>"',
+  );
+  $options['cf_imfs']['cf_imagemagick_opt_rotateimage'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Rotate Image',
+    '#default_value' => $im_rotateimage,
+    '#description' => 'Imagick::rotateImage(mixed $background, float $degrees). Rotate image 90deg example: "<b>#00000000, 90</b>"',
   );
   $options['cf_imfs']['cf_imagemagick_opt_setimagequality'] = array(
     '#type' => 'textfield',
