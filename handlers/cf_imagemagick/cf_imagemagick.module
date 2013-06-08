@@ -48,6 +48,8 @@ function cf_imagemagick_convertfile_info() {
 function cf_imagemagick_options($format) {
   $render['cf_imagemagick'] = array(
     'dpi' => array(
+      '#type' => 'textfield',
+      '#title' => 'Dots Per Inch',
     ),
   );
   return $render;
