@@ -195,6 +195,7 @@ function cf_imagemagick_action_settings($im, $settings, $file) {
         if ($setting == 'resizeimage') { $im->resizeImage($args[0], $args[1], Imagick::FILTER_LANCZOS, 1); }
         if ($setting == 'setcompressionquality') { $im->setCompressionQuality($args[0]); }
         if ($setting == 'rotateimage') { $im->rotateImage(new ImagickPixel($args[0]), $args[1]); }
+        if ($setting == 'sepiatoneimage') { $im->sepiaToneImage($args[0]); }
         if ($setting == 'appendimages') {
           // I don't actually know what resetIterator does.
           $im->resetIterator();

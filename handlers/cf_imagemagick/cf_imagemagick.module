@@ -73,6 +73,7 @@ function cf_imagemagick_options($format, $specific = NULL) {
   $im_setcompressionquality = isset($im['cf_imagemagick_opt_setcompressionquality']) ? $im['cf_imagemagick_opt_setcompressionquality'] : NULL;
   $im_appendimages = isset($im['cf_imagemagick_opt_appendimages']) ? $im['cf_imagemagick_opt_appendimages'] : NULL;
   $im_rotateimage = isset($im['cf_imagemagick_opt_rotateimage']) ? $im['cf_imagemagick_opt_rotateimage'] : NULL;
+  $im_sepiatoneimage = isset($im['cf_imagemagick_opt_sepiatoneimage']) ? $im['cf_imagemagick_opt_sepiatoneimage'] : NULL;
 
   $options = array();
   $options['cf_imfs'] = array(
@@ -80,12 +81,6 @@ function cf_imagemagick_options($format, $specific = NULL) {
     '#title' => 'ImageMagick',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
-  );
-  $options['cf_imfs']['cf_imagemagick_opt_setresolution'] = array(
-    '#type' => 'textfield',
-    '#title' => 'Set Resolution',
-    '#default_value' => $im_setresolution,
-    '#description' => 'Imagick::setResolution(<i>x</i>, <i>y</i>). Use 300 by 300 dpi example: "<b>300, 300</b>"',
   );
   $options['cf_imfs']['cf_imagemagick_opt_resizeimage'] = array(
     '#type' => 'textfield',
@@ -104,6 +99,18 @@ function cf_imagemagick_options($format, $specific = NULL) {
     '#title' => 'Set Compression Quality',
     '#default_value' => $im_setcompressionquality,
     '#description' => 'Imagick::setCompressionQuality(int $quality). Compress image at 95% example: "<b>95</b>"',
+  );
+  $options['cf_imfs']['cf_imagemagick_opt_setresolution'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Set Resolution',
+    '#default_value' => $im_setresolution,
+    '#description' => 'Imagick::setResolution(<i>x</i>, <i>y</i>). Use 300 by 300 dpi example: "<b>300, 300</b>"',
+  );
+  $options['cf_imfs']['cf_imagemagick_opt_sepiatoneimage'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Sepia Tone Image',
+    '#default_value' => $im_sepiatoneimage,
+    '#description' => 'Imagick::sepiaToneImage(float $threshold). Sepia tone image at threshold 80 example: "<b>80</b>"',
   );
 
   // This should probably come last in the list.
