@@ -48,14 +48,35 @@ function cf_imagemagick_convertfile_info() {
   );
 }
 
-function cf_imagemagick_options($format) {
-  $render['cf_imagemagick'] = array(
-    'dpi' => array(
-      '#type' => 'textfield',
-      '#title' => 'Dots Per Inch',
-    ),
+/**
+ * Custom options callback.
+ *
+ * Create render array for conversion options unique to ImageMagick. These
+ * options will be displayed when editing the field structure of a field that
+ * uses the convertfile widget and ImageMagick as the provider.
+ *
+ * @param string $format
+ *   The format that is currently selected.
+ * @param array $specific
+ *   The portion of the form containing provider specific configuration data.
+ *
+ * @see cf_imagemagick_convertfile_info()
+ */
+function cf_imagemagick_options($format, $specific = NULL) {
+  $options = array();
+  $options['cf_imagemagick'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'ImageMagick',
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
   );
-  return $render;
+  $options['cf_imagemagick']['dpi'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Dots Per Inch',
+    '#default_value' => isset($specific['cf_imagemagick']['dpi']) ? $specific['cf_imagemagick']['dpi'] : NULL,
+  );
+
+  return $options;
 }
 
 /**

@@ -449,7 +449,6 @@ function convertfile_field_widget_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $settings = $widget['settings'];
   $provider = $settings['convertfile_provider'];
-  $format = $settings['convertfile_format'];
 
   if ($field['type'] == 'file') {
     $form['progress_indicator'] = array(
@@ -490,7 +489,7 @@ function convertfile_field_widget_settings_form($field, $instance) {
     '#description' => t('The provider used to convert this file.'),
     '#ajax' => array(
       'callback' => 'convertfile_field_widget_settings_form_ajax',
-      'wrapper' => 'convertfile-format-wrapper',
+      'wrapper' => 'convertfile-ajax',
       'method' => 'replace',
       'effect' => 'fade',
     ),
@@ -506,7 +505,10 @@ function convertfile_field_widget_settings_form($field, $instance) {
 /**
  * Implements hook_form_FORM_ID_alter().
  *
- * Place any ajax dependent render arrays here instead of the widget_settings_form above.
+ * Place any ajax dependent render arrays here instead of the
+ * widget_settings_form. hook_widget_settings_form does not have access to the
+ * form_state, the examination of which is required for providing the correct
+ * form construction during an ajax callback.
  *
  * @see convertfile_field_widget_settings_form()
  */
@@ -514,30 +516,39 @@ function convertfile_form_field_ui_field_edit_form_alter(&$form, &$form_state) {
   $instance = isset($_SESSION['convertfile_instance']) ? $_SESSION['convertfile_instance'] : NULL;
 
   $settings = isset($instance['widget']['settings']) ? $instance['widget']['settings'] : NULL;
-  $format = isset($settings['convertfile_format']) ? $settings['convertfile_format'] : NULL;
   $provider = isset($settings['convertfile_provider']) ? $settings['convertfile_provider'] : NULL;
+  $format = isset($settings['convertfile_ajax']['convertfile_format']) ? $settings['convertfile_ajax']['convertfile_format'] : NULL;
+  $specific = isset($settings['convertfile_ajax']['convertfile_specific']) ? $settings['convertfile_ajax']['convertfile_specific'] : NULL;
 
   $values = isset($form_state['values']['instance']['widget']['settings']) ? 
     $form_state['values']['instance']['widget']['settings'] : NULL;
   $provider = isset($values['convertfile_provider']) ? $values['convertfile_provider'] : $provider;
   $format = isset($values['convertfile_format']) ? $values['convertfile_format'] : $format;
 
-  $form['instance']['widget']['settings']['convertfile_format'] = array(
+  $form['instance']['widget']['settings']['convertfile_ajax'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="convertfile-ajax">',
+    '#suffix' => '</div>',
+    '#weight' => 22,
+  );
+  $form['instance']['widget']['settings']['convertfile_ajax']['convertfile_format'] = array(
     '#title' => t('Convert to format'),
     '#type' => 'select',
     '#description' => 'The file format that will be converted to.',
     '#options' => convertfile_options_format($provider),
     '#default_value' => isset($format) ? $format : 'none',
-    '#prefix' => "<div id='convertfile-format-wrapper'>",
-    '#suffix' => '</div>',
-    '#weight' => 22,
   );
-  $form['instance']['widget']['settings']['convertfile_specific'] = convertfile_options_specific($provider, $format);
+  $form['instance']['widget']['settings']['convertfile_ajax']['convertfile_specific'] = convertfile_options_specific($provider, $format, $specific);
 
 }
 
+/**
+ * AJAX callback.
+ *
+ * @see convertfile_form_field_ui_field_edit_form_alter()
+ */
 function convertfile_field_widget_settings_form_ajax($form, &$form_state) {
-  return $form['instance']['widget']['settings']['convertfile_format'];
+  return $form['instance']['widget']['settings']['convertfile_ajax'];
 }
 
 /**
@@ -598,11 +609,36 @@ function convertfile_options_format($provider_mn = NULL) {
 }
 
 /**
+ * Get provider and format specific configuration options.
  *
+ * Executes the provider specific callback function to gather a render array
+ * which will be inserted in structure field configuration forms that use
+ * the convertfile widget.
+ *
+ * @param string $provider
+ *   The machine name of the requested conversion provider.
+ * @param string $format
+ *   The machine name of the requested conversion format.
+ * @param array $specific
+ *   Any existing form data containing specific configuration settings.
+ *
+ * @return array|bool
+ *   A render array or FALSE if no provider callback was found.
+ *
+ * @see convertfile_form_field_ui_field_edit_form_alter()
  */
-function convertfile_options_specific($provider, $format) {
+function convertfile_options_specific($provider, $format, $specific = NULL) {
   $options = NULL;
-  // Execute provider callback specified in info hook.
+
+  $info = convertfile_collect_info();
+  $callback = isset($info[$provider]['options_callback']) ? $info[$provider]['options_callback'] : NULL;
+  if (function_exists($callback)) {
+    // Execute provider callback specified in info hook.
+    $options = $callback($format, $specific);
+  }
+  else {
+    watchdog('convertfile', "Provider specific options callback not found: {$callback}", NULL, WATCHDOG_ERROR);
+  }
 
   return $options;
 }
@@ -619,7 +655,7 @@ function convertfile_options_specific($provider, $format) {
  * @param string $format
  *   The machine name of the format to convert to.
  * @param array $specific
- *   The exact construction of options is dependant on the provider.
+ *   The exact construction of options is dependent on the provider.
  *
  * @return bool
  *   TRUE on successful conversion, FALSE otherwise. See watchdog for error
@@ -634,9 +670,11 @@ function convertfile_convert_file($file, $provider, $format, $extensions = NULL,
       'widget' => array(
         'settings' => array(
           'convertfile_provider' => $provider,
-          'convertfile_format' => $format,
           'convertfile_extensions' => $extensions,
-          'convertfile_specific' => $specific,
+          'convertfile_ajax' => array(
+            'convertfile_format' => $format,
+            'convertfile_specific' => $specific,
+          ),
         ),
       ),
     );

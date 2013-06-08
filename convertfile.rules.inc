@@ -115,7 +115,7 @@ function convertfile_condition_provider($instance, $provider) {
 function convertfile_condition_format($instance, $format) {
   $report = FALSE;
   $settings = $instance['widget']['settings'];
-  if (array_key_exists($settings['convertfile_format'], $format)) {
+  if (array_key_exists($settings['convertfile_ajax']['convertfile_format'], $format)) {
     $report = TRUE;
   }
 
