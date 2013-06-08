@@ -609,7 +609,7 @@ function convertfile_options_format($provider_mn = NULL) {
 }
 
 /**
- * Get provider and format specific configuration options.
+ * Get provider/format specific options for field instance configuration.
  *
  * Executes the provider specific callback function to gather a render array
  * which will be inserted in structure field configuration forms that use
@@ -620,7 +620,7 @@ function convertfile_options_format($provider_mn = NULL) {
  * @param string $format
  *   The machine name of the requested conversion format.
  * @param array $specific
- *   Any existing form data containing specific configuration settings.
+ *   (optional) Any existing form data containing specific configuration settings.
  *
  * @return array|bool
  *   A render array or FALSE if no provider callback was found.
@@ -631,13 +631,63 @@ function convertfile_options_specific($provider, $format, $specific = NULL) {
   $options = NULL;
 
   $info = convertfile_collect_info();
-  $callback = isset($info[$provider]['options_callback']) ? $info[$provider]['options_callback'] : NULL;
-  if (function_exists($callback)) {
-    // Execute provider callback specified in info hook.
-    $options = $callback($format, $specific);
+  if ($callback = isset($info[$provider]['options']) ? $info[$provider]['options'] : NULL) {
+    if (function_exists($callback)) {
+      // Execute provider callback specified in info hook.
+      $options = $callback($format, $specific);
+    }
+    else {
+      watchdog('convertfile', "Provider specific options callback not found: {$callback}", NULL, WATCHDOG_ERROR);
+    }
   }
   else {
-    watchdog('convertfile', "Provider specific options callback not found: {$callback}", NULL, WATCHDOG_ERROR);
+    // No callback is registered. This is not an error.
+    $options = array();
+  }
+
+  return $options;
+}
+
+/**
+ * Transform exposed instance submission back to field instance like structure.
+ *
+ * If the results of cf_imagemagick_options() ever become exposed to a normal
+ * user form, and then submitted, what is returned is a flattened array. The
+ * managing submit handler for this user exposed form must transform the
+ * provider specific configuration variables back into an instance like array
+ * before calling the programmatic convert function. The programmatic convert
+ * function runs everything through rules, passing an instance as one of the
+ * variables.
+ *
+ * @param string $provider
+ *   Machine name of the requested conversion provider.
+ * @param array $form
+ *   Form that the options have been exposed on.
+ * @param array &$form_state
+ *   Current values submitted by the form.
+ * @param string $format
+ *   (optional) Machine name of requested conversion format.
+ *
+ * @return array|bool
+ *   An array formatted exactly as convertfile_options_specific is. or NULL on
+ *   error.
+ */
+function convertfile_options_exposed($provider, $form, &$form_state, $format = NULL) {
+  $options = NULL;
+
+  $info = convertfile_collect_info();
+  if ($callback = isset($info[$provider]['exposed_options']) ? $info[$provider]['exposed_options'] : NULL) {
+    if (function_exists($callback)) {
+      // Execute provider callback specified in info hook.
+      $options = $callback($form, $form_state, $format);
+    }
+    else {
+      watchdog('convertfile', "Provider specific exposed options callback not found: {$callback}", NULL, WATCHDOG_ERROR);
+    }
+  }
+  else {
+    // No callback is registered. This is not an error.
+    $options = array();
   }
 
   return $options;
@@ -678,6 +728,7 @@ function convertfile_convert_file($file, $provider, $format, $extensions = NULL,
         ),
       ),
     );
+
     $result = convertfile_validate_conversion($file, $instance);
     if (is_array($result) && empty($result)) {
       $report = TRUE;

@@ -114,6 +114,7 @@ function cf_imagemagick_action_jpg($file, $instance) {
 function cf_imagemagick_action_common($file, $instance, $format, $extension) {
   $report = FALSE;
   $settings = $instance['widget']['settings'];
+  $im_settings = $settings['convertfile_ajax']['convertfile_specific']['cf_imfs'];
   $dir = pathinfo($file->uri, PATHINFO_DIRNAME);
   $base = pathinfo($file->filename, PATHINFO_FILENAME);
   $ext = pathinfo($file->filename, PATHINFO_EXTENSION);

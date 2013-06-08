@@ -118,20 +118,23 @@ function convertfile_convert_form($form, &$form_state) {
     '#title' => t('Provider'),
     '#options' => convertfile_options_provider(),
     '#ajax' => array(
-      'callback' => 'convertfile_convert_form_ajax_callback',
-      'wrapper' => 'format-div',
+      'callback' => 'convertfile_convert_form_ajax',
+      'wrapper' => 'convertfile-ajax',
       'method' => 'replace',
       'effect' => 'fade',
     ),    
   );
-  $form['format'] = array(
+  $form['ajax'] = array(
+    '#type' => 'markup',
+    '#prefix' => '<div id="convertfile-ajax">',
+    '#suffix' => '</div>',
+  );
+  $form['ajax']['format'] = array(
     '#type' => 'select',
     '#title' => t('Format'),
     '#options' => convertfile_options_format($provider),
-    '#prefix' => '<div id="format-div">',
-    '#suffix' => '</div>',
   );
-  $form['specific'] = convertfile_options_specific($provider, $format);
+  $form['ajax']['specific'] = convertfile_options_specific($provider, $format);
   $form['fid_new'] = array(
     '#type' => 'managed_file',
     '#title' => t('Uploaded file.'),
@@ -159,8 +162,8 @@ function convertfile_convert_form($form, &$form_state) {
  *
  * @see convertfile_convert_form()
  */
-function convertfile_convert_form_ajax_callback($form, &$form_state) {
-  return $form['format'];
+function convertfile_convert_form_ajax($form, &$form_state) {
+  return $form['ajax'];
 }
 
 /**
@@ -174,15 +177,17 @@ function convertfile_convert_form_submit($form, &$form_state) {
   $fid = (isset($values['fid_new']) && $values['fid_new']) ? $values['fid_new'] : $fid;
   $provider = isset($values['provider']) ? $values['provider'] : NULL;
   $format = isset($values['format']) ? $values['format'] : NULL;
-  $specific = isset($values['specific']) ? $values['specific'] : NULL;
+  if (!$specific = convertfile_options_exposed($provider, $form, &$form_state, $format)) {
+    drupal_set_message('Error retrieving provider specific options. Will try to convert anyway.', 'warning');
+  }
 
   if ($fid && $file = file_load($fid)) {
-    if (convertfile_convert_file($file, $provider, $format, $specific)) {
+    if (convertfile_convert_file($file, $provider, $format, NULL, $specific)) {
       $url = file_create_url($file->uri);
       drupal_set_message("File has been converted to: <a href='{$url}'>$url</a>" , 'status');
     }
     else {
-      drupal_set_message('Unable to convert file. See <a href="/admin/config/convertfile/settings/watchdog">logs</a> for detailed error.', 'warning');
+      drupal_set_message('Unable to convert file. See <a href="/admin/config/convertfile/settings/watchdog">Logs</a> for detailed error.', 'warning');
     }
   }
 }

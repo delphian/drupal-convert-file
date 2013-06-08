@@ -40,7 +40,8 @@ function cf_imagemagick_convertfile_info() {
         'png' => '.png (image/png)',
         'jpg' => '.jpg (image/jpeg)',
       ),
-      'options_callback' => 'cf_imagemagick_options',
+      'options' => 'cf_imagemagick_options',
+      'exposed_options' => 'cf_imagemagick_options_exposed',
       'help' => array(
         'url' => 'https://github.com/delphian/drupal-convert-file/wiki/ImageMagick',
       ),
@@ -55,6 +56,8 @@ function cf_imagemagick_convertfile_info() {
  * options will be displayed when editing the field structure of a field that
  * uses the convertfile widget and ImageMagick as the provider.
  *
+ * Render array key names must be prefaced with the module name.
+ *
  * @param string $format
  *   The format that is currently selected.
  * @param array $specific
@@ -63,18 +66,51 @@ function cf_imagemagick_convertfile_info() {
  * @see cf_imagemagick_convertfile_info()
  */
 function cf_imagemagick_options($format, $specific = NULL) {
+  $im_dpi = isset($specific['cf_imfs']['cf_imagemagick_dpi']) ? $specific['cf_imfs']['cf_imagemagick_dpi'] : NULL;
+
   $options = array();
-  $options['cf_imagemagick'] = array(
+  $options['cf_imfs'] = array(
     '#type' => 'fieldset',
     '#title' => 'ImageMagick',
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $options['cf_imagemagick']['dpi'] = array(
+  $options['cf_imfs']['cf_imagemagick_opt_dpi'] = array(
     '#type' => 'textfield',
     '#title' => 'Dots Per Inch',
-    '#default_value' => isset($specific['cf_imagemagick']['dpi']) ? $specific['cf_imagemagick']['dpi'] : NULL,
+    '#default_value' => $im_dpi
   );
+
+  return $options;
+}
+
+/**
+ * Transform exposed instance submission back to field instance like structure.
+ *
+ * @param array $form
+ *   Form that the options have been exposed on.
+ * @param array &$form_state
+ *   Current values submitted by the form.
+ * @param string $format
+ *   Machine name of requested conversion format.
+ *
+ * @return array|bool
+ *   An array formatted exactly as cf_imagemagick_options is. or NULL on error.
+ *
+ * @see convertfile_options_exposed()
+ * @see cf_imagemagick_options()
+ */
+function cf_imagemagick_options_exposed($form, &$form_state, $format = NULL) {
+  $options = NULL;
+
+  if (isset($form_state['values'])) {
+    $values = $form_state['values'];
+    foreach($values as $key => $value) {
+      if (strpos($key, 'cf_imagemagick_opt') !== FALSE) {
+        $options['cf_imfs'][$key] = $value;
+      }
+    }
+  }
 
   return $options;
 }
