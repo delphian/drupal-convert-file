@@ -63,10 +63,13 @@ function cf_imagemagick_convertfile_info() {
  * @param array $specific
  *   The portion of the form containing provider specific configuration data.
  *
+ * @todo Create an alter hook for this, place another for actdual IM processing.
  * @see cf_imagemagick_convertfile_info()
  */
 function cf_imagemagick_options($format, $specific = NULL) {
-  $im_dpi = isset($specific['cf_imfs']['cf_imagemagick_dpi']) ? $specific['cf_imfs']['cf_imagemagick_dpi'] : NULL;
+  $im = isset($specific['cf_imfs']) ? $specific['cf_imfs'] : NULL;
+  $im_setresolution = isset($im['cf_imagemagick_opt_setresolution']) ? $im['cf_imagemagick_opt_setresolution'] : NULL;
+  $im_resizeimage = isset($im['cf_imagemagick_opt_resizeimage']) ? $im['cf_imagemagick_opt_resizeimage'] : NULL;
 
   $options = array();
   $options['cf_imfs'] = array(
@@ -75,10 +78,17 @@ function cf_imagemagick_options($format, $specific = NULL) {
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
   );
-  $options['cf_imfs']['cf_imagemagick_opt_dpi'] = array(
+  $options['cf_imfs']['cf_imagemagick_opt_setresolution'] = array(
     '#type' => 'textfield',
-    '#title' => 'Dots Per Inch',
-    '#default_value' => $im_dpi
+    '#title' => 'Set Resolution',
+    '#default_value' => $im_setresolution,
+    '#description' => 'Imagick::setResolution(<i>x</i>, <i>y</i>). Use 300 by 300 dpi example: "<b>300, 300</b>"',
+  );
+  $options['cf_imfs']['cf_imagemagick_opt_resizeimage'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Resize Image',
+    '#default_value' => $im_resizeimage,
+    '#description' => 'Imagick::resizeImage(<i>x</i>, <i>y</i>, Imagick::FILTER_LANCZOS, 1). Make all images 800 pixels wide example: "<b>800, 0</b>"',
   );
 
   return $options;
@@ -97,6 +107,7 @@ function cf_imagemagick_options($format, $specific = NULL) {
  * @return array|bool
  *   An array formatted exactly as cf_imagemagick_options is. or NULL on error.
  *
+ * @todo Create an alter hook for this, place another for actdual IM processing.
  * @see convertfile_options_exposed()
  * @see cf_imagemagick_options()
  */
