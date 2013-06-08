@@ -822,20 +822,40 @@ function convertfile_validate_conversion($file, $instance) {
     }
   }
 
-  // Log failed file conversion.
+  // Log the success or failure of a file conversion and invoke rules.
+  convertfile_log_result($file, $instance);
+
+  // Wrap any file conversion error into an appropriate return value expected
+  // from a file validator.
   if (isset($file->convertfile['error'])) {
-    watchdog('convertfile', "{$name} Failed to convert {$file->convertfile['original']->filename}. {$file->convertfile['error']}", NULL, WATCHDOG_ERROR);
-    rules_invoke_event('convertfile_failure', $file, $instance);
     $report[] = $file->convertfile['error'];
-  }
-  // Log successful file conversion.
-  else {
-    watchdog('convertfile', "{$name} Saved: {$file->convertfile['original']->filename} To: {$file->filename} " . 
-      "({$file->uri})", NULL, WATCHDOG_INFO);
-    rules_invoke_event('convertfile_success', $file, $instance);
   }
 
   return $report;
+}
+
+/**
+ * Log any conversion attempt to watchdog and invoke success or fail rules.
+ *
+ * @param stdClass $file
+ *   The file object to examine result of conversion on.
+ * @param array $instance
+ *   Field instance that this file was submitted to. 
+ */
+function convertfile_log_result($file, $instance) {
+  $settings = $instance['widget']['settings'];
+
+  // Log failed file conversion.
+  if (isset($file->convertfile['error'])) {
+    watchdog('convertfile', "{$settings['convertfile_provider']} Failed to convert {$file->convertfile['original']->filename}. {$file->convertfile['error']}", NULL, WATCHDOG_ERROR);
+    rules_invoke_event('convertfile_failure', $file, $instance);
+  }
+  // Log successful file conversion.
+  else {
+    watchdog('convertfile', "{$settings['convertfile_provider']} Saved: {$file->convertfile['original']->filename} To: {$file->filename} " . 
+      "({$file->uri})", NULL, WATCHDOG_INFO);
+    rules_invoke_event('convertfile_success', $file, $instance);
+  }
 }
 
 /**
