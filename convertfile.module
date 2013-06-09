@@ -796,25 +796,9 @@ function convertfile_validate_conversion($file, $instance) {
       unset($file->convertfile['backup']);
     }
 
-    // If file has a FID then it is not a new upload.
-    if (isset($file->fid) && $file->fid) {
-      // We must resave the file information. Because this is not a new upload
-      // nobody else is going to resave this.
-      file_save($file);
-      $dir = drupal_dirname($file->uri);
-      // "move" the file to record any changes to the filename on disk.
-      if ($moved_file = file_move($file, $dir . $file->filename, FILE_EXISTS_RENAME)) {
-        $file->uri = $moved_file->uri;
-      }
-      else {
-        $file->convertfile['error'] = 'Unable to rename file.';
-      }
-    }
-    // This is a new upload. Because the destination was messed with, make 
-    // sure its still unique.
-    else {
-      $file->destination = file_destination($file->destination, FILE_EXISTS_RENAME);
-    }
+    // Rename filename and relocate file on disk for new and existing files.
+    convertfile_update_file($file);
+
   }
   else {
     if ($settings['convertfile_provider'] != "none") {
@@ -856,6 +840,47 @@ function convertfile_log_result($file, $instance) {
       "({$file->uri})", NULL, WATCHDOG_INFO);
     rules_invoke_event('convertfile_success', $file, $instance);
   }
+}
+
+/**
+ * Update a file object's filename or location on the disk.
+ *
+ * After a conversion both the title of the file and its location on the disk
+ * may have been altered. This new information needs to be checked and updated
+ * in the database.
+ *
+ * @param stdObject $file
+ *   The file object that possibly contains an updated uri or filename.
+ *
+ * @return bool
+ *   returns TRUE on success, FALSE on failure. On failure the file object
+ *   $file->convertfile['error'] will contain an error message.
+ */
+function convertfile_update_file($file) {
+  $report = TRUE;
+
+  // If file has a FID then it is not a new upload.
+  if (isset($file->fid) && $file->fid) {
+    // We must resave the file information. Because this is not a new upload
+    // nobody else is going to resave this.
+    file_save($file);
+    $dir = drupal_dirname($file->uri);
+    // "move" the file to record any changes to the filename on disk.
+    if ($moved_file = file_move($file, $dir . $file->filename, FILE_EXISTS_RENAME)) {
+      $file->uri = $moved_file->uri;
+    }
+    else {
+      $file->convertfile['error'] = 'Unable to rename file.';
+      $report = FALSE;
+    }
+  }
+  // This is a new upload. Because the destination was messed with, make 
+  // sure its still unique.
+  else {
+    $file->destination = file_destination($file->destination, FILE_EXISTS_RENAME);
+  }
+
+  return $report;
 }
 
 /**
