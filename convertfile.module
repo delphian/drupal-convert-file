@@ -697,6 +697,9 @@ function convertfile_options_exposed($provider, $form, &$form_state, $format = N
  * Programmatic wrapper for convertfile_validate_conversion().
  *
  * Call this function directly to perform a programmatically based conversion.
+ * Rules, and even most programmatic functions, expect file conversion to be
+ * initiated by an upload to a file field that has an instance configuration,
+ * therefore this configuration must be mocked up if it does not really exist.
  *
  * @param int|stdClass $file
  *   The FID or file object to convert. This object may be modified.
@@ -763,9 +766,7 @@ function convertfile_validate_conversion($file, $instance) {
   $settings = $instance['widget']['settings'];
 
   // Save original information for any checks done after conversion is over.
-  $file->convertfile = array();
-  $file->convertfile['instance'] = $instance;
-  $file->convertfile['original'] = clone $file;
+  $file_orig = clone $file;
 
   $info = convertfile_collect_info();
   // If no provider is provided (I.E. None or isset == false), treat the file
@@ -778,41 +779,44 @@ function convertfile_validate_conversion($file, $instance) {
     // Save original file to $file->convertfile['backup'] with its own FID.
     $file = convertfile_backup_file($file, $instance);
 
+    // Determine which file should be converted, the current or backup.
+    $file_process = (variable_get('convertfile_to_backup', FALSE)) ? $file->convertfile['backup'] : $file;
+    $file_process->convertfile = array();
+    $file_process->convertfile['original'] = clone $file;
+    $file_process->convertfile['instance'] = $instance;
+
     // Execute the provider callback function if specified.
     if ($function && function_exists($function)) {
-      if (!$function($file, $instance)) {
-        $file->convertfile['error'] = "File conversion by {$name} callback failed.";
+      if (!$function($file_process, $instance)) {
+        $file_process->convertfile['error'] = "File conversion by {$name} callback failed.";
       }
     }
     // No provider callback function specified (good). Invoke rules.
     // Everything should be rules based.
     else {
-      rules_invoke_event('convertfile_request', $file, $instance);
-    }
-
-    // If a conversion has failed then remove the backup file.
-    if (isset($file->convertfile['error'])) {
-      file_delete($file->convertfile['backup']);
-      unset($file->convertfile['backup']);
+      rules_invoke_event('convertfile_request', $file_process, $instance);
     }
 
     // Rename filename and relocate file on disk for new and existing files.
-    convertfile_update_file($file);
+    convertfile_update_file($file_process);
 
   }
   else {
     if ($settings['convertfile_provider'] != "none") {
-      $file->convertfile['error'] = "Unknown conversion provider: {$settings['convertfile_provider']}.";
+      $file_process->convertfile['error'] = "Unknown conversion provider: {$settings['convertfile_provider']}.";
     }
   }
 
   // Log the success or failure of a file conversion and invoke rules.
-  convertfile_log_result($file, $instance);
+  convertfile_log_result($file_process, $file_process->convertfile['original'], $instance);
 
   // Wrap any file conversion error into an appropriate return value expected
   // from a file validator.
-  if (isset($file->convertfile['error'])) {
-    $report[] = $file->convertfile['error'];
+  if (isset($file_process->convertfile['error'])) {
+    $report[] = $file_process->convertfile['error'];
+    // If a conversion has failed then remove the backup file.
+    file_delete($file->convertfile['backup']);
+    unset($file->convertfile['backup']);
   }
 
   return $report;
@@ -823,20 +827,22 @@ function convertfile_validate_conversion($file, $instance) {
  *
  * @param stdClass $file
  *   The file object to examine result of conversion on.
+ * @param stdClass $file_orig
+ *   The original file object before anything was done.
  * @param array $instance
  *   Field instance that this file was submitted to. 
  */
-function convertfile_log_result($file, $instance) {
+function convertfile_log_result($file, $file_orig, $instance) {
   $settings = $instance['widget']['settings'];
 
   // Log failed file conversion.
   if (isset($file->convertfile['error'])) {
-    watchdog('convertfile', "{$settings['convertfile_provider']} Failed to convert {$file->convertfile['original']->filename}. {$file->convertfile['error']}", NULL, WATCHDOG_ERROR);
+    watchdog('convertfile', "{$settings['convertfile_provider']} Failed to convert {$file_orig->filename}. {$file->convertfile['error']}", NULL, WATCHDOG_ERROR);
     rules_invoke_event('convertfile_failure', $file, $instance);
   }
   // Log successful file conversion.
   else {
-    watchdog('convertfile', "{$settings['convertfile_provider']} Saved: {$file->convertfile['original']->filename} To: {$file->filename} " . 
+    watchdog('convertfile', "{$settings['convertfile_provider']} Saved: {$file_orig->filename} To: {$file->filename} " . 
       "({$file->uri})", NULL, WATCHDOG_INFO);
     rules_invoke_event('convertfile_success', $file, $instance);
   }
@@ -1012,7 +1018,7 @@ function convertfile_help($path, $arg) {
 }
 
 /**
- * Implements hook_file_presave().
+ * Implements hook_file_insert().
  *
  * For any new files objects being inserted into the database, check first if
  * the file has run through a conversion operation. If the file has been
@@ -1021,10 +1027,13 @@ function convertfile_help($path, $arg) {
 function convertfile_file_insert($file) {
   // 'backup' will exist if this current file object is the result of a conversion.
   if (isset($file->convertfile['backup']) && isset($file->fid)) {
+    $settings = (isset($file->convertfile['instance'])) 
+      ? $file->convertfile['instance']['widget']['settings']
+      : $file->convertfile['backup']->convertfile['instance']['widget']['settings'];
+
     // Have not thought out why this update is being called twice, but it is.
     if (!convertfile_db_conversion_is_backup($file->convertfile['backup']->fid)) {
-      $provider = $file->convertfile['instance']['widget']['settings']['convertfile_provider'];
-      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $provider);
+      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $settings['convertfile_provider']);
     }
   }
 }
@@ -1039,22 +1048,33 @@ function convertfile_file_insert($file) {
  * converted from an original then associate the two files together.
  */
 function convertfile_file_update($file) {
-  // 'backup' will exist if this current file object is the result of a conversion.
-  if (isset($file->convertfile['backup']) && isset($file->fid)) {
-    // Have not thought out why this update is being called twice, but it is.
-    if (!convertfile_db_conversion_is_backup($file->convertfile['backup']->fid)) {
-      $provider = $file->convertfile['instance']['widget']['settings']['convertfile_provider'];
-      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $provider);
+  // 'convertfile' element will exist if this file object has undergone
+  // conversion processing.
+  if (isset($file->convertfile) && isset($file->fid)) {
+    $settings = (isset($file->convertfile['instance'])) 
+      ? $file->convertfile['instance']['widget']['settings']
+      : $file->convertfile['backup']->convertfile['instance']['widget']['settings'];
+    // If file object has a backup element then file object is the current 
+    // file, otherwise file object itself is the backup.
+    $fid_current = isset($file->convertfile['backup']) ? $file->fid : $file->convertfile['original']->fid;
+    $fid_backup = isset($file->convertfile['backup']) ? $file->convertfile['backup']->fid : $file->fid;
+
+    // Only associate backup to current if association does not already exist.
+    if (!convertfile_db_conversion_is_backup($fid_backup)) {
+      convertfile_db_convertion_insert($fid_backup, $fid_current, $file->uid, $settings['convertfile_provider']);
     }
   }
-
-  // Force all backus to have the same status as the current file.
-  if (isset($file->fid)) {
-    if ($fids = convertfile_db_conversion_get_backups($file->fid)) {
-      foreach ($fids as $fid) {
-        if ($bfile = file_load($fid)) {
-          $bfile->status = $file->status;
-          file_save($bfile);
+  // Current update has not undergone any conversion. Check if updated object
+  // has any existing backups. If so, force all backus to have the same status
+  // as the current file.
+  else {
+    if (isset($file->fid)) {
+      if ($fids = convertfile_db_conversion_get_backups($file->fid)) {
+        foreach ($fids as $fid) {
+          if ($bfile = file_load($fid)) {
+            $bfile->status = $file->status;
+            file_save($bfile);
+          }
         }
       }
     }
