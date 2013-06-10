@@ -41,14 +41,13 @@ directory:
 
 Enable modules:
 
-1. `drush en convertfile cf_googledrive cf_convertfile cf_imagemagick -y`
+1.  `drush en convertfile cf_googledrive cf_convertfile cf_imagemagick -y`
 
-#### Install Google Drive Provider ####
+Configure providers:
 
-https://github.com/delphian/drupal-convert-file/wiki/Google-Drive
+1.  [Configure Google Drive](https://github.com/delphian/drupal-convert-file/wiki/Google-Drive)
 
-##### Create a new file field on a piece of content and attach the `Convert File`
-widget ####
+Create a new file field on content and assign `Convert File` widget:
 
 1.  Visit /admin/structure/types/manage/page/fields
 2.  Add new field: `test file`, Field type: `file`, Widget: `Convert File`, Click Save.
@@ -56,7 +55,7 @@ widget ####
 4.  Near the middle of <b>Basic Page Settings</b>:
 5.  Add the `pdf` format to <b>Allowed file extensions</b>.
 6.  At the bottom of <b>Basic Page Settings</b>:
-7.  select `Convert File` from the <b>Convert using provider</b> dropdown.
+7.  select `Google Drive` from the <b>Convert using provider</b> dropdown.
 8.  Select `.pdf (application/pdf)` from <b>Convert to format</b> dropdown.
 9.  Click <b>Save settings</b>
 
