@@ -1,9 +1,0 @@
-name = Convert File Provider Convert File
-description = "Provider provided by the Convert File module."
-core = 7.x
-package = Convert File
-configure = /admin/config/convertfile/settings/handler/convertfile
-
-files[] = cf_convertfile.rules.inc
-
-dependencies[] = convertfile
