@@ -448,7 +448,7 @@ function convertfile_managed_file_value(&$element, $input = FALSE, $form_state =
 function convertfile_field_widget_settings_form($field, $instance) {
   $widget = $instance['widget'];
   $settings = $widget['settings'];
-  $provider = $settings['convertfile_provider'];
+  $provider = isset($settings['convertfile_provider']) ? $settings['convertfile_provider'] : NULL;
 
   if ($field['type'] == 'file') {
     $form['progress_indicator'] = array(
@@ -781,9 +781,9 @@ function convertfile_validate_conversion($file, $instance) {
 
     // Determine which file should be converted, the current or backup.
     $file_process = (variable_get('convertfile_to_backup', FALSE)) ? $file->convertfile['backup'] : $file;
-    $file_process->convertfile = array();
     $file_process->convertfile['original'] = clone $file;
     $file_process->convertfile['instance'] = $instance;
+    $file_process->convertfile['converted'] = TRUE;
 
     // Execute the provider callback function if specified.
     if ($function && function_exists($function)) {
@@ -897,11 +897,10 @@ function convertfile_update_file($file) {
  * assigned to $file->convertfile['backup']. If the file object contains a
  * file that has just been uploaded (has not yet been formally saved and has
  * no fid) then a copy of the object will be made, saved formally as a managed
- * file and also assigned to $file->convertfile['backup'].
+ * file and also assigned to $file->convertfile['backup']. If the original
+ * file object is already managed then the new backup will be associated to
+ * the original, otherwise this will be left for a hook_insert to care for.
  *
- * No permenant association between the original file and backup file will
- * be provided and is the responsibility of the calling function.
- * 
  * @param stdClass $file
  *   Drupal file object or FID to create backup for.
  * @param array $instance
@@ -916,19 +915,26 @@ function convertfile_backup_file($file, $instance) {
   $report = NULL;
   $file = (is_object($file)) ? $file : file_load($file);
 
-  $original_file = clone $file;
+  if (!isset($file->convertfile)) {
+    $file->convertfile = array();
+  }
+
   // If the file is already managed then make another managed copy.
-  if (isset($original_file->fid)) {
+  if (isset($file->fid)) {
     $dir = drupal_dirname($file->uri);
     $file->convertfile['backup'] = file_copy($file, $dir . $file->filename, FILE_EXISTS_RENAME);
     if (isset($file->convertfile['backup']->fid)) {
+      $settings = $instance['widget']['settings'];
       $report = $file;
+      // Track backup file against original.
+      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $settings['convertfile_provider'], $file->convertfile['backup']->filemime);
     }
   }
   // If the file has just been uploaded then we must save a new managed copy.
   // as the backup. This results in the non intuitive effect of assigning the
   // backup an FID that precedes the actual uploaded file's eventual FID.
   else {
+    $original_file = clone $file;
     if (copy($original_file->uri, $original_file->destination)) {
       $original_file->uri = $original_file->destination;
       unset($original_file->destination);
@@ -1020,20 +1026,22 @@ function convertfile_help($path, $arg) {
 /**
  * Implements hook_file_insert().
  *
- * For any new files objects being inserted into the database, check first if
- * the file has run through a conversion operation. If the file has been
- * converted from an original then associate the two files together.
+ * Backups will always be saved first and enter into this hook. Ignore them as
+ * there is no way to determine who the parent is.
+ *
+ * The purpose of this hook is to manage new uploads, and associate their
+ * backup file. Association for existing files is handled in the conversion
+ * function itself.
  */
 function convertfile_file_insert($file) {
-  // 'backup' will exist if this current file object is the result of a conversion.
-  if (isset($file->convertfile['backup']) && isset($file->fid)) {
-    $settings = (isset($file->convertfile['instance'])) 
-      ? $file->convertfile['instance']['widget']['settings']
-      : $file->convertfile['backup']->convertfile['instance']['widget']['settings'];
-
-    // Have not thought out why this update is being called twice, but it is.
+  // Conversion has run, and there is a backup.
+  if (isset($file->convertfile['backup'])) {
+    $settings = (isset($file->convertfile['converted'])) ? 
+      $file->convertfile['instance']['widget']['settings'] :
+      $file->convertfile['backup']->convertfile['instance']['widget']['settings'];
+    // Make sure the convert function itself didn't already associate.
     if (!convertfile_db_conversion_is_backup($file->convertfile['backup']->fid)) {
-      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $settings['convertfile_provider'], $file->filemime);
+      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $settings['convertfile_provider'], $file->convertfile['backup']->filemime);
     }
   }
 }
@@ -1042,39 +1050,14 @@ function convertfile_file_insert($file) {
  * Implements hook_file_update().
  *
  * Change the status of all backups to match current file status.
- *
- * For any existing file objects updated in the database, check first if
- * the file has run through a conversion operation. If the file has been
- * converted from an original then associate the two files together.
  */
 function convertfile_file_update($file) {
-  // 'convertfile' element will exist if this file object has undergone
-  // conversion processing.
-  if (isset($file->convertfile) && isset($file->fid)) {
-    $settings = (isset($file->convertfile['instance'])) 
-      ? $file->convertfile['instance']['widget']['settings']
-      : $file->convertfile['backup']->convertfile['instance']['widget']['settings'];
-    // If file object has a backup element then file object is the current 
-    // file, otherwise file object itself is the backup.
-    $fid_current = isset($file->convertfile['backup']) ? $file->fid : $file->convertfile['original']->fid;
-    $fid_backup = isset($file->convertfile['backup']) ? $file->convertfile['backup']->fid : $file->fid;
-
-    // Only associate backup to current if association does not already exist.
-    if (!convertfile_db_conversion_is_backup($fid_backup)) {
-      convertfile_db_convertion_insert($fid_backup, $fid_current, $file->uid, $settings['convertfile_provider'], $file->filemime);
-    }
-  }
-  // Current update has not undergone any conversion. Check if updated object
-  // has any existing backups. If so, force all backus to have the same status
-  // as the current file.
-  else {
-    if (isset($file->fid)) {
-      if ($fids = convertfile_db_conversion_get_backups($file->fid)) {
-        foreach ($fids as $fid) {
-          if ($bfile = file_load($fid)) {
-            $bfile->status = $file->status;
-            file_save($bfile);
-          }
+  if (isset($file->fid)) {
+    if ($fids = convertfile_db_conversion_get_backups($file->fid)) {
+      foreach ($fids as $fid) {
+        if ($bfile = file_load($fid)) {
+          $bfile->status = $file->status;
+          file_save($bfile);
         }
       }
     }
