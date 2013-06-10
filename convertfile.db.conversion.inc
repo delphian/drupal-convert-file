@@ -5,7 +5,7 @@
  * Interface with the databse. Recording and retrieving conversion records.
  */
 
-define('CONVERTFILE_DB_CONVERSION', 'convertfile_conversion');
+define('CONVERTFILE_DB_CONVERSION', 'convertfile_backup');
 
 /**
  * Define the schema for the conversion table.
@@ -29,14 +29,14 @@ function convertfile_db_conversion_schema() {
         'description' => 'The {users}.uid who uploaded the file.',
       ),
       'fid_backup' => array(
-        'description' => 'A previous version of the file.',
+        'description' => 'A backup file associated with the current file.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0
       ),
       'fid_current' => array(
-        'description' => 'The current converted file.',
+        'description' => 'The current file.',
         'type' => 'int',
         'unsigned' => TRUE,
         'not null' => TRUE,
@@ -47,10 +47,17 @@ function convertfile_db_conversion_schema() {
         'length' => 64,
         'not null' => TRUE,
         'default' => '',
-        'description' => 'The provider that converted this file to next.',
+        'description' => 'The provider involved in this conversion.',
+      ),
+      'mimetype' => array(
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'Mime type of this backup.',
       ),
       'created' => array(
-        'description' => 'The Unix timestamp when a conversion was created from this file.',
+        'description' => 'The Unix timestamp when backup was created.',
         'type' => 'int',
         'not null' => TRUE,
         'default' => 0
@@ -82,11 +89,13 @@ function convertfile_db_conversion_schema() {
  *   User identification that owns these files.
  * @param string $provider
  *   The machine name of the provider that converted this file to next.
+ * @param string $mime
+ *   The mime type of the backup file.
  *
  * @return int|bool
  *   The inserted CID (unique record id) on success, FALSE on failure.
  */
-function convertfile_db_convertion_insert($fid_backup, $fid_current, $uid, $provider = '') {
+function convertfile_db_convertion_insert($fid_backup, $fid_current, $uid, $provider, $mime) {
   $cid = FALSE;
 
   // Initializing $record array with values.
@@ -95,6 +104,7 @@ function convertfile_db_convertion_insert($fid_backup, $fid_current, $uid, $prov
     'fid_current' => $fid_current,
     'uid' => $uid,
     'provider' => $provider,
+    'mimetype' => $mime,
     'created' => time(),
   );
   // Inserting $record (data) into the database. Here $table variable contains the name of the table.
@@ -191,11 +201,13 @@ function convertfile_db_conversion_is_backup($fid_backup) {
  *
  * @param int $fid_current
  *   FID for the current file.
+ * @param array $options
+ *   (optional) Associative array to filter selection with.
  *
  * @return array|bool
  *   Array of FIDs which are backups to the current file, or NULL if none.
  */
-function convertfile_db_conversion_get_backups($fid_current) {
+function convertfile_db_conversion_get_backups($fid_current, $options = array()) {
   $backups = array();
 
   $records = db_select(CONVERTFILE_DB_CONVERSION, 'c')

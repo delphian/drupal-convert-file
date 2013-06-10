@@ -235,7 +235,7 @@ function convertfile_rules_form($form, &$form_state) {
  *
  * Display all providers.
  */
-function convertfile_handler_form() {
+function convertfile_provider_form() {
   // Display some helpful text if no provider's have been installed yet.
   if (!$info = convertfile_collect_info(TRUE)) {
     $form['hint'] = array(
@@ -258,11 +258,11 @@ function convertfile_handler_form() {
 }
 
 /**
- * Submit handler for convertfile_handler_form.
+ * Submit handler for convertfile_provider_form.
  *
- * @see convertfile_handler_form()
+ * @see convertfile_provider_form()
  */
-function convertfile_handler_form_submit($form, &$form_state) {
+function convertfile_provider_form_submit($form, &$form_state) {
   $values = $form_state['values'];
   if (isset($values['enable']) && $values['enable']) {
     if (module_enable(array('cf_convertfile'), TRUE)) {

@@ -1,0 +1,10 @@
+name = Convert File Provider Google Drive
+description = "Use Google Drive SDK to convert files."
+core = 7.x
+package = Convert File
+configure = /admin/config/convertfile/settings/provider/googledrive
+
+files[] = cf_googledrive.rules.inc
+
+dependencies[] = convertfile
+dependencies[] = libraries (>=7.x-2.1)

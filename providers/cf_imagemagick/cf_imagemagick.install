@@ -1,0 +1,46 @@
+<?php
+
+/**
+ * @file
+ * Installation functionality.
+ *
+ * Post a drupal message each time the module is enabled. Cleanup old
+ * variables when module is uninstalled.
+ *
+ * `brew install ghostscript`
+ * `brew install ImageMagic --with-ghostscript`
+ * `pecl install imagick`
+ * `vi /Applications/MAMP/Library/bin/envvars` # remove sandbox, comment out DYLD_LIBRARY_PATH
+ *
+ * @see http://stackoverflow.com/questions/11413249/cant-install-ghostscript-in-imagemagick
+ * @see http://stackoverflow.com/questions/588918/imagemagick-imagick-convert-pdf-to-jpg-using-native-php-apis
+ */
+
+/**
+ * Implements hook_enable().
+ */
+function cf_imagemagick_enable() {
+  drupal_set_message('A new file conversion provider is available: "ImageMagick".');
+}
+
+/**
+ * Implements hook_install().
+ */
+function cf_imagemagick_install() {
+  // Enable help hook text.
+  variable_set('cf_imagemagick_help', TRUE);
+}
+
+/**
+ * Implements hook_uninstall().
+ *
+ * Remove all our variables.
+ */
+function cf_imagemagick_uninstall() {
+  // Get module variables
+  $results = db_query("SELECT v.name FROM {variable} AS v WHERE v.name LIKE '%s%%'", 'cf_imagemagick_');
+  // Remove variables
+  while ($row = $results->fetchAssoc()) {
+    variable_del($row['name']);
+  }    
+}

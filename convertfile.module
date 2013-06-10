@@ -107,18 +107,18 @@ function convertfile_menu() {
   }
   // Provide a page to display all installed providers and their 
   // configuration.
-  $items['admin/config/convertfile/settings/handler'] = array(
+  $items['admin/config/convertfile/settings/provider'] = array(
     'type' => MENU_LOCAL_TASK,
     'title' => 'Providers',
     'description' => 'All installed file conversion providers.',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('convertfile_handler_form'),
+    'page arguments' => array('convertfile_provider_form'),
     'access arguments' => array('administer convertfile settings'),
     'file' => 'convertfile.admin.inc',
     'file path' => drupal_get_path('module', 'convertfile'),
     'weight' => 35,
   );
-  $items['admin/config/convertfile/settings/handler/config'] = array(
+  $items['admin/config/convertfile/settings/provider/config'] = array(
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'title' => 'Config',
   );
@@ -1033,7 +1033,7 @@ function convertfile_file_insert($file) {
 
     // Have not thought out why this update is being called twice, but it is.
     if (!convertfile_db_conversion_is_backup($file->convertfile['backup']->fid)) {
-      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $settings['convertfile_provider']);
+      convertfile_db_convertion_insert($file->convertfile['backup']->fid, $file->fid, $file->uid, $settings['convertfile_provider'], $file->filemime);
     }
   }
 }
@@ -1061,7 +1061,7 @@ function convertfile_file_update($file) {
 
     // Only associate backup to current if association does not already exist.
     if (!convertfile_db_conversion_is_backup($fid_backup)) {
-      convertfile_db_convertion_insert($fid_backup, $fid_current, $file->uid, $settings['convertfile_provider']);
+      convertfile_db_convertion_insert($fid_backup, $fid_current, $file->uid, $settings['convertfile_provider'], $file->filemime);
     }
   }
   // Current update has not undergone any conversion. Check if updated object
@@ -1155,14 +1155,13 @@ function convertfile_field_formatter_view($entity_type, $entity, $field, $instan
  *   NULL if this module should not comment on this file. -1 If the file
  *   is restricted, or an associative array if permission is granted:
  *   - 'Content-Type': (string) The mime type of the file.
- *
- * @todo Add a role that can also be assigned permission to download.
  */
 function convertfile_file_download($uri) {
   global $user;
   $access = NULL;
   $permission = 'download private backup files';
 
+  // Only act if private downloads are enabled.
   if (variable_get('convertfile_private_downloads', FALSE)) {
     $file = db_select('file_managed', 'f')
       ->fields('f')
@@ -1171,6 +1170,7 @@ function convertfile_file_download($uri) {
       ->fetchAssoc();
 
     if ($file && isset($file['uid'])) {
+      // User must be owner of file, user 1, or have the permission assigned.
       if (($file['uid'] == $user->uid) || (user_access($permission, $user))) {
         $access = array('Content-Type' => file_get_mimetype($uri));
       }

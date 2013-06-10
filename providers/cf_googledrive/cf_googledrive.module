@@ -1,0 +1,107 @@
+<?php
+
+/**
+ * @file
+ * File conversion provided by Google Drive SDK.
+ */
+
+/**
+ * Implements of hook_menu().
+ */
+function cf_googledrive_menu() {
+  // Provide a page to handle watchdog error messages.
+  $items['admin/config/convertfile/settings/provider/googledrive'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Google Drive',
+    'description' => 'File conversion provided by Google Drive.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cf_googledrive_form'),
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'cf_googledrive.admin.inc',
+    'file path' => drupal_get_path('module', 'cf_googledrive'),
+    'weight' => 40,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_libraries_info().
+ */
+function cf_googledrive_libraries_info() {
+  // A very simple library. No changing APIs (hence, no versions), no variants.
+  // Expected to be extracted into 'sites/all/libraries/simple'.
+  $libraries['google-api-php-client'] = array(
+    'name' => 'Google API PHP Client',
+    'vendor url' => 'https://developers.google.com/drive/quickstart-php',
+    'download url' => 'https://code.google.com/p/google-api-php-client/',
+    'version' => 'none',
+    'path' => 'src',
+    'files' => array(
+      'php' => array(
+        'Google_Client.php',
+        'contrib/Google_DriveService.php',
+        'contrib/Google_Oauth2Service.php',
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
+ * Implements hook_convertfile_info().
+ *
+ * Register our provider and formats with convertfile module.
+ */
+function cf_googledrive_convertfile_info() {
+  return array(
+    'cf_googledrive' => array(
+      'name' => 'Google Drive',
+      'types' => array(
+        'pdf' => '.pdf (application/pdf)',
+        'txt' => '.txt (text/plain)',
+        'odt' => '.odt (application/vnd.oasis.opendocument.text)',
+      ),
+      'help' => array(
+        'url' => 'https://github.com/delphian/drupal-convert-file/wiki/Google-Drive',
+      )
+    ),
+  );
+}
+
+/**
+ * Implements hook_help()
+ *
+  * @see https://developers.google.com/drive/auth/web-server
+ */
+function cf_googledrive_help($path, $arg) {
+  // If help is empty at end of function then NULL will be returned.
+  $help = '';
+
+  // Only use help if it is is still being requested.
+  if (variable_get('cf_googledrive_help', FALSE)) {
+    if ($path == 'admin/config/convertfile/settings/provider/googledrive') {
+
+      $help .= '' .
+      '<p>[<a href="https://github.com/delphian/drupal-convert-file/wiki/Google-Drive">Help Wiki</a>]</p>';
+
+      // Helper text to create google application.
+      if (!variable_get('cf_googledrive_client_id')) {
+        $help .= '<p>[<a href="https://github.com/delphian/drupal-convert-file/wiki/Google-Drive#installation">Please see the installation instructions</a>]';
+      }
+
+      // Helper text when credentails are present but its not working for some reason.
+      if (variable_get('cf_googledrive_credentials', FALSE) && !cf_googledrive_service(cf_googledrive_client())) {
+        $help .= '<p>' . t('Application authorization may have been revoked. If you are having trouble with the connection please revoke the authorization if it still exists and try to connect again.') . '</p>' .
+          '<ul>' .
+          '  <li>Visit <a href="https://www.google.com/settings/security">https://www.google.com/settings/security</a>.</li>' .
+          '  <li>Click on <b>Manage Access</b> beneath the Connected applications and sites</b> heading.</li>' .
+          '  <li>Click on the <b>Revoke Access</b> button that follows <b>Drupal Convert File Google Drive Handler</b>.</li>' .
+          '</ul>';
+      }
+    }
+  }
+
+  return (strlen($help)) ? $help : NULL;
+}

@@ -42,3 +42,34 @@ function convertfile_schema() {
 
   return $schema;
 }
+
+/**
+ * Implements hook_update_N().
+ *
+ * Rename table name and add mimetype to backup file data.
+ */
+function convertfile_update_7100(&$sandbox) {
+  // Rename the table.
+  $sql = "ALTER TABLE convertfile_conversion RENAME convertfile_backup";
+  db_query($sql);
+  // Add new field to table.
+  $schema = drupal_get_schema(CONVERTFILE_DB_CONVERSION);
+  db_add_field(CONVERTFILE_DB_CONVERSION, 'mimetype', $schema['fields']['mimetype']);
+  // Update any existing rows mimetype.
+  $results = db_select(CONVERTFILE_DB_CONVERSION, 'c')
+    ->fields('c')
+    ->condition('mimetype', '', '=')
+    ->execute()
+    ->fetchAll();
+  if ($results) {
+    $count = 0;
+    foreach($results as $result) {
+      $file = file_load($result->fid_backup);
+      $sql = "UPDATE " . CONVERTFILE_DB_CONVERSION . " SET mimetype='{$file->filemime}' WHERE cid={$result->cid}";
+      db_query($sql);
+      $count++;
+    }
+  }
+
+  return t("Database convertfile_conversion has been renamed to convertfile_backup. New field mimetype has been added. {$count} rows have had their mimetype value updated.");
+}

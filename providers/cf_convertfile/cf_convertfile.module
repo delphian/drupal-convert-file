@@ -1,0 +1,45 @@
+<?php
+
+/**
+ * @file
+ * Provide a default conversion provider.
+ */
+
+/**
+ * Implements of hook_menu().
+ */
+function cf_convertfile_menu() {
+  // Provide a page to handle watchdog error messages.
+  $items['admin/config/convertfile/settings/provider/convertfile'] = array(
+    'type' => MENU_LOCAL_TASK,
+    'title' => 'Convert File',
+    'description' => 'Default provider of Convert File module.',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('cf_convertfile_form'),
+    'access arguments' => array('administer convertfile settings'),
+    'file' => 'cf_convertfile.admin.inc',
+    'file path' => drupal_get_path('module', 'cf_convertfile'),
+    'weight' => 40,
+  );
+
+  return $items;
+}
+
+/**
+ * Implements hook_convertfile_info().
+ *
+ * Register our provider and formats with convertfile module.
+ */
+function cf_convertfile_convertfile_info() {
+  return array(
+    'cf_convertfile' => array(
+      'name' => 'Convert File',
+      'types' => array (
+        'gz' => '.gz (application/x-gzip)',
+      ),
+      'help' => array(
+        'url' => 'https://github.com/delphian/drupal-convert-file/wiki/Convert-File',
+      ),
+    ),
+  );
+}
