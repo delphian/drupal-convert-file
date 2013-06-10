@@ -52,6 +52,7 @@ function convertfile_update_7100(&$sandbox) {
   // Rename the table.
   $sql = "ALTER TABLE convertfile_conversion RENAME convertfile_backup";
   db_query($sql);
+  cache_clear_all();
   // Add new field to table.
   $schema = drupal_get_schema(CONVERTFILE_DB_CONVERSION);
   db_add_field(CONVERTFILE_DB_CONVERSION, 'mimetype', $schema['fields']['mimetype']);
