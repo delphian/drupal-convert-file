@@ -995,10 +995,14 @@ function convertfile_help($path, $arg) {
 
     // Settings page and all children.
     if (strpos($path, 'admin/config/convertfile/settings') !== FALSE) { 
-      // Help text if no providers have been enabled.
+      // Warn if no providers are enabled.
       $providers = convertfile_collect_info();
       if (empty($providers)) {
         $help .= '<p>' . t('You must have at least one conversion provider enabled for this module to do anything useful. Visit the <a href="/admin/modules">modules page</a> and enable a conversion provider.') . '</p>';
+      }
+      // Warn if no cURL is found.
+      if (!function_exists('curl_version')) {
+        $help .= '<p>' . t('cURL must first be installed as a PHP extension in order for this module to operate.') . '</p>';
       }
     }
 
