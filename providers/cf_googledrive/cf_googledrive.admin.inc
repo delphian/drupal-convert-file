@@ -116,9 +116,14 @@ function cf_googledrive_form_submit($form_id, &$form_state) {
     drupal_set_message(t('Google Drive has been disconnected from drupal. Dont forget to revoke access of the application to your drive: <a href="https://support.google.com/accounts/answer/41236">https://support.google.com/accounts/answer/41236</a>'));
   }
   // Redirect to google drive authentication.
-  else if ($values['op'] == 'Connect Google Drive') {
+  elseif ($values['op'] == 'Connect Google Drive') {
     if ($client = cf_googledrive_client()) {
-      drupal_goto($client->createAuthUrl(), array('external' => TRUE));
+      $authUrl = $client->createAuthUrl();
+      watchdog('cf_googledrive', "Redirecting admin to authorize google drive at: {$authUrl}", NULL, WATCHDOG_DEBUG);
+      drupal_goto($authUrl, array('external' => TRUE));
+    }
+    else {
+      drupal_set_message('Unable to instantiate google client. This is normally due to an invalid or missing client id.', 'error');
     }
   }
   else {
