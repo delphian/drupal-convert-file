@@ -295,6 +295,18 @@ function convertfile_watchdog_form() {
     WATCHDOG_EMERGENCY => 'dblog-emerg',
   );
 
+  // Only include convertfile core and provider messages.
+  $modules = array();
+  if ($info = convertfile_collect_info()) {
+    $modules = array_keys($info);
+  }
+  $modules[] = 'convertfile';
+  $where = '';
+  foreach($modules as $module) {
+    $where .= (strlen($where)) ? ' OR w.type = ?' : '(w.type = ?';
+  }
+  $where .= ')';
+
   $header = array(
     '', // Icon column.
     array('data' => t('Type'), 'field' => 'w.type'),
@@ -309,7 +321,7 @@ function convertfile_watchdog_form() {
   $query
     ->fields('w', array('wid', 'uid', 'severity', 'type', 'timestamp', 'message', 'variables', 'link'))
     ->addField('u', 'name');
-  $query->where('(w.type = :type)', array(':type' => 'convertfile'));
+  $query->where($where, $modules);
 
   $result = $query
     ->limit(50)
