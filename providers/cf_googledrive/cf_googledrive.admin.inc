@@ -50,13 +50,22 @@ function cf_googledrive_form() {
     // Connect google drive to application.
     if (!empty($library['loaded']) && ($client = cf_googledrive_client())) {
       $authUrl = $client->createAuthUrl();
-      $form['connect_google_drive'] = array(
-        '#type' => 'button',
-        '#button_type' => 'submit',
-        '#executes_submit_callback' => TRUE,
-        '#value' => 'Connect Google Drive',
-        '#markup' => "<p><a href='$authUrl'>Connect to my Google Drive!</a></p>",
-      );
+      // Overlay module will interfere with drupal_goto() in the submit
+      // handler.
+      if (module_exists('overlay')) {
+        $form['connect_google_drive'] = array(
+          '#type' => 'markup',
+          '#markup' => "<p><a href='$authUrl'>Connect to my Google Drive!</a></p>",
+        );
+      }
+      else {
+        $form['connect_google_drive'] = array(
+          '#type' => 'button',
+          '#button_type' => 'submit',
+          '#executes_submit_callback' => TRUE,
+          '#value' => 'Connect Google Drive',
+        );
+      }
     }
   }
 
