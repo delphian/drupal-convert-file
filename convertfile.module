@@ -291,7 +291,6 @@ function convertfile_managed_file_process($element, &$form_state, $form) {
   // If this element does not contain an active file don't display any
   // features.
   if ($fid) {
-
     // Add inline revert buttons to this element.
     if (variable_set('convertfile_inline_revert', FALSE)) {
       if ($backups = convertfile_db_conversion_get_backups($fid)) {
@@ -788,16 +787,19 @@ function convertfile_validate_conversion($file, $instance) {
     // Post conversion hook. Modules may modify file object or disk image.
     module_invoke_all('convertfile_pre_convert', $file_process, $instance);
 
-    // Execute the provider callback function if specified.
-    if ($function && function_exists($function)) {
-      if (!$function($file_process, $instance)) {
-        $file_process->convertfile['error'] = "File conversion by {$name} callback failed.";
+    // Only convert if an error does not already exist on this object.
+    if (!isset($file_process->convertfile['error'])) {
+      // Execute the provider callback function if specified.
+      if ($function && function_exists($function)) {
+        if (!$function($file_process, $instance)) {
+          $file_process->convertfile['error'] = "File conversion by {$name} callback failed.";
+        }
       }
-    }
-    // No provider callback function specified (good). Invoke rules.
-    // Everything should be rules based.
-    else {
-      rules_invoke_event('convertfile_request', $file_process, $instance);
+      // No provider callback function specified (good). Invoke rules.
+      // Everything should be rules based.
+      else {
+        rules_invoke_event('convertfile_request', $file_process, $instance);
+      }
     }
 
     // Post conversion hook. Modules may modify file object or disk image.

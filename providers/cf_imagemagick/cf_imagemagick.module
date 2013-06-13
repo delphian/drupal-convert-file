@@ -46,8 +46,10 @@ function cf_imagemagick_convertfile_info() {
         'jpg' => '.jpg (image/jpeg)',
       ),
       // Provider specific options callback (optional).
+      // @see cf_imagemagick_options()
       'options' => 'cf_imagemagick_options',
       // Provider specific options submission formatter callback (optional).
+      // @see cf_imagemagick_options_exposed()
       'exposed_options' => 'cf_imagemagick_options_exposed',
       // Friendly link for help with this provider (optional).
       'help' => array(

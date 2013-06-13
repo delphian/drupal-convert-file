@@ -145,8 +145,6 @@ function convertfile_convert_form($form, &$form_state) {
   $form['fid_new'] = array(
     '#type' => 'managed_file',
     '#title' => t('Uploaded file.'),
-    '#convertfile_provider' => 'cf_googledrive',
-    '#convertfile_format' => 'pdf',
     '#description' => t('Upload a new file to convert.'),
   );
   $form['fid_existing'] = array(
