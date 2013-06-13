@@ -31,17 +31,25 @@ function cf_imagemagick_menu() {
  * Implements hook_convertfile_info().
  *
  * Register our provider and formats with convertfile module.
+ *
+ * @see convertfile_collect_info()
  */
 function cf_imagemagick_convertfile_info() {
   return array(
+    // Preface array structure with module machine name.
     'cf_imagemagick' => array(
+      // Human friendly name of provider.
       'name' => 'ImageMagick',
+      // Extensions that this provider will convert to.
       'types' => array(
         'png' => '.png (image/png)',
         'jpg' => '.jpg (image/jpeg)',
       ),
+      // Provider specific options callback (optional).
       'options' => 'cf_imagemagick_options',
+      // Provider specific options submission formatter callback (optional).
       'exposed_options' => 'cf_imagemagick_options_exposed',
+      // Friendly link for help with this provider (optional).
       'help' => array(
         'url' => 'https://github.com/delphian/drupal-convert-file/wiki/ImageMagick',
       ),

@@ -785,6 +785,9 @@ function convertfile_validate_conversion($file, $instance) {
     $file_process->convertfile['instance'] = $instance;
     $file_process->convertfile['converted'] = TRUE;
 
+    // Post conversion hook. Modules may modify file object or disk image.
+    module_invoke_all('convertfile_pre_convert', $file_process, $instance);
+
     // Execute the provider callback function if specified.
     if ($function && function_exists($function)) {
       if (!$function($file_process, $instance)) {
@@ -796,6 +799,9 @@ function convertfile_validate_conversion($file, $instance) {
     else {
       rules_invoke_event('convertfile_request', $file_process, $instance);
     }
+
+    // Post conversion hook. Modules may modify file object or disk image.
+    module_invoke_all('convertfile_post_convert', $file_process);
 
     // Rename filename and relocate file on disk for new and existing files.
     convertfile_update_file($file_process);
