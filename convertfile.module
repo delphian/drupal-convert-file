@@ -170,6 +170,8 @@ function convertfile_permission() {
 /**
  * Collates all information on conversion providers and supported extensions.
  *
+ * The information may be altered with hook_convertfile_info_alter()
+ *
  * @param bool $reset
  *   Bypass all static variables and caching
  *
@@ -189,6 +191,7 @@ function convertfile_collect_info($reset = FALSE) {
     }
     else {
       $info = module_invoke_all('convertfile_info');
+      drupal_alter('convertfile_info', $info);
     }
   }
 
